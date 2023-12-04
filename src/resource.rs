@@ -23,6 +23,7 @@ pub struct CameraSettings {
 }
 
 impl CameraSettings {
+    #[allow(dead_code)]
     pub fn new() -> Self {
         Self {
             translational_shake: 0.0,
