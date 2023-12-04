@@ -3,6 +3,7 @@ use bevy_inspector_egui::quick::WorldInspectorPlugin;
 use bevy_rapier3d::prelude::*;
 
 use camera::FollowCameraPlugin;
+use enemy::EnemyPlugin;
 use input::InputPlugin;
 use map_generation::MapGeneratorPlugin;
 use player::PlayerPlugin;
@@ -10,6 +11,7 @@ use resource::*;
 
 mod camera;
 mod component;
+mod enemy;
 mod input;
 mod map_generation;
 mod player;
@@ -31,6 +33,7 @@ fn main() {
             InputPlugin,
             PlayerPlugin,
             MapGeneratorPlugin,
+            EnemyPlugin,
         ))
         .run();
 }
