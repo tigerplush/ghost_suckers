@@ -10,7 +10,10 @@ impl Plugin for InputPlugin {
     }
 }
 
-fn update_values(keys: Res<Input<KeyCode>>, mut input_values: ResMut<InputValues>) {
+fn update_values(
+    keys: Res<Input<KeyCode>>, mut input_values: ResMut<InputValues>,
+    buttons: Res<Input<MouseButton>>,
+) {
     let mut movement = Vec2::ZERO;
     if keys.pressed(KeyCode::A) {
         movement.x += -1.0;
@@ -26,4 +29,5 @@ fn update_values(keys: Res<Input<KeyCode>>, mut input_values: ResMut<InputValues
     }
 
     input_values.movement = movement.normalize_or_zero();
+    input_values.mouse_pressed = buttons.pressed(MouseButton::Left);
 }

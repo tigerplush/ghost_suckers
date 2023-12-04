@@ -3,12 +3,14 @@ use bevy::prelude::*;
 #[derive(Resource)]
 pub struct InputValues {
     pub movement: Vec2,
+    pub mouse_pressed: bool,
 }
 
 impl InputValues {
     pub fn new() -> Self {
         Self {
             movement: Vec2::default(),
+            mouse_pressed: false,
         }
     }
 }
