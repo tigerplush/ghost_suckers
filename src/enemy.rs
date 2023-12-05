@@ -1,3 +1,5 @@
+use std::time::Duration;
+
 use bevy::prelude::*;
 use bevy_rapier3d::prelude::*;
 
@@ -7,13 +9,19 @@ pub struct EnemyPlugin;
 
 impl Plugin for EnemyPlugin {
     fn build(&self, app: &mut App) {
-        app.add_systems(Startup, spawn_enemy)
-            .add_systems(Update, (move_enemies, detect_collisions));
+        app.insert_resource(GhostSpawnConfig {
+            timer: Timer::new(Duration::from_secs_f32(0.5), TimerMode::Repeating),
+        }).add_systems(Update, (spawn_enemy, move_enemies, detect_collisions));
     }
 }
 
 #[derive(Component)]
 struct Ghost;
+
+#[derive(Resource)]
+struct GhostSpawnConfig {
+    timer: Timer,
+}
 
 fn move_enemies(
     time: Res<Time>,
@@ -21,31 +29,52 @@ fn move_enemies(
     mut query: Query<&mut Transform, With<Ghost>>,
 ) {
     for mut ghost in &mut query {
-        let height = time.elapsed_seconds().sin();
-        ghost.translation = Vec3::new(ghost.translation.x, 1.0 + height, ghost.translation.z);
+        let height = time.elapsed_seconds().sin() + 1.0;
+
+        let mut direction = Vec3::ZERO;
         if let Ok(player) = player_query.get_single() {
             let mut vantage = player.translation;
-            vantage.y = ghost.translation.y;
+            vantage.y = height;
             ghost.look_at(vantage, Vec3::Y);
+            let mut diff = player.translation - ghost.translation;
+            diff.y = 0.0;
+            direction = diff.normalize_or_zero() * time.delta_seconds() * 0.5;
         }
+        ghost.translation += direction;
+        ghost.translation.y = height;
     }
 }
 
 fn spawn_enemy(
+    time: Res<Time>,
     asset_server: Res<AssetServer>,
+    mut config: ResMut<GhostSpawnConfig>,
+    query: Query<&Transform, With<Player>>,
     mut commands: Commands
 ) {
-    commands.spawn(SceneBundle {
-        scene: asset_server.load("ghost.glb#Scene0"),
-        transform: Transform::from_xyz(5.0, 1.0, 5.0).with_scale(Vec3 { x: 0.5, y: 0.5, z: 0.5 }),
-        ..default()
-    })
-    .insert(Name::from("Ghost"))
-    .insert(Ghost)
-    .insert(Collider::capsule(Vec3::Y / -2.0, Vec3::Y / 2.0, 0.5))
-    .insert(RigidBody::KinematicPositionBased)
-    .insert(Sensor)
-    .insert(ActiveEvents::COLLISION_EVENTS);
+    config.timer.tick(time.delta());
+
+    if config.timer.finished() {
+        let mut pos = Vec3::new(5.0, 1.0, 5.0);
+
+        if let Ok(player) = query.get_single() {
+            let angle = time.elapsed().as_millis() as f32 * 100.0;
+            let radius = 5.0;
+            pos.x = angle.sin() * radius + player.translation.x;
+            pos.z = angle.cos() * radius + player.translation.z;
+        }
+        commands.spawn(SceneBundle {
+            scene: asset_server.load("ghost.glb#Scene0"),
+            transform: Transform::from_translation(pos).with_scale(Vec3 { x: 0.5, y: 0.5, z: 0.5 }),
+            ..default()
+        })
+        .insert(Name::from("Ghost"))
+        .insert(Ghost)
+        .insert(Collider::capsule(Vec3::Y / -2.0, Vec3::Y / 2.0, 0.5))
+        .insert(RigidBody::KinematicPositionBased)
+        .insert(Sensor)
+        .insert(ActiveEvents::COLLISION_EVENTS);
+    }
 }
 
 fn detect_collisions(
