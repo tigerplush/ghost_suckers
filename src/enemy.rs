@@ -1,6 +1,6 @@
 use std::time::Duration;
 
-use bevy::prelude::*;
+use bevy::{prelude::*, time::Stopwatch};
 use bevy_rapier3d::prelude::*;
 
 use crate::{resource::Stats, component::Player};
@@ -23,13 +23,17 @@ struct GhostSpawnConfig {
     timer: Timer,
 }
 
+#[derive(Deref, DerefMut, Component)]
+struct FloatTimer(Stopwatch);
+
 fn move_enemies(
     time: Res<Time>,
     player_query: Query<&Transform, (With<Player>, Without<Ghost>)>,
-    mut query: Query<&mut Transform, With<Ghost>>,
+    mut query: Query<(&mut Transform, &mut FloatTimer), With<Ghost>>,
 ) {
-    for mut ghost in &mut query {
-        let height = time.elapsed_seconds().sin() + 1.0;
+    for (mut ghost, mut timer) in &mut query {
+        timer.tick(time.delta());
+        let height = timer.elapsed_secs().sin() + 1.0;
 
         let mut direction = Vec3::ZERO;
         if let Ok(player) = player_query.get_single() {
@@ -73,7 +77,8 @@ fn spawn_enemy(
         .insert(Collider::capsule(Vec3::Y / -2.0, Vec3::Y / 2.0, 0.5))
         .insert(RigidBody::KinematicPositionBased)
         .insert(Sensor)
-        .insert(ActiveEvents::COLLISION_EVENTS);
+        .insert(ActiveEvents::COLLISION_EVENTS)
+        .insert(FloatTimer(Stopwatch::new()));
     }
 }
 
