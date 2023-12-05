@@ -50,5 +50,5 @@ fn update_values(
         return;
     };
 
-    let global_cursor = ray.get_point(distance);
+    input_values.mouse_position = ray.get_point(distance);
 }

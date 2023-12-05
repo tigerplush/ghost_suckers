@@ -1,7 +1,10 @@
 use std::time::Duration;
 
 use bevy::{prelude::*, time::Stopwatch};
+use bevy_prng::ChaCha8Rng;
+use bevy_rand::resource::GlobalEntropy;
 use bevy_rapier3d::prelude::*;
+use rand_core::RngCore;
 
 use crate::{resource::Stats, component::Player};
 
@@ -52,6 +55,7 @@ fn move_enemies(
 fn spawn_enemy(
     time: Res<Time>,
     asset_server: Res<AssetServer>,
+    mut rng: ResMut<GlobalEntropy<ChaCha8Rng>>,
     mut config: ResMut<GhostSpawnConfig>,
     query: Query<&Transform, With<Player>>,
     mut commands: Commands
@@ -62,7 +66,7 @@ fn spawn_enemy(
         let mut pos = Vec3::new(5.0, 1.0, 5.0);
 
         if let Ok(player) = query.get_single() {
-            let angle = time.elapsed().as_millis() as f32 * 100.0;
+            let angle = rng.next_u32() as f32 * 100.0;
             let radius = 5.0;
             pos.x = angle.sin() * radius + player.translation.x;
             pos.z = angle.cos() * radius + player.translation.z;

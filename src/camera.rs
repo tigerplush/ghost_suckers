@@ -11,7 +11,6 @@ impl Plugin for FollowCameraPlugin {
     }
 }
 
-
 fn spawn_camera(
     camera_settings: Res<CameraSettings>,
     mut commands: Commands,

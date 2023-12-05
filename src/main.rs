@@ -1,6 +1,8 @@
 use bevy::prelude::*;
 use bevy_inspector_egui::quick::WorldInspectorPlugin;
 use bevy_rapier3d::prelude::*;
+use bevy_rand::prelude::*;
+use bevy_prng::ChaCha8Rng;
 
 use camera::FollowCameraPlugin;
 use enemy::EnemyPlugin;
@@ -32,6 +34,7 @@ fn main() {
             WorldInspectorPlugin::new(),
             RapierPhysicsPlugin::<NoUserData>::default(),
             RapierDebugRenderPlugin::default(),
+            EntropyPlugin::<ChaCha8Rng>::default(),
             FollowCameraPlugin,
             InputPlugin,
             PlayerPlugin,

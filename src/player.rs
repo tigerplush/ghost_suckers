@@ -19,20 +19,17 @@ struct MovementSettings {
 }
 
 fn spawn_player(
-    mut meshes: ResMut<Assets<Mesh>>,
-    mut materials: ResMut<Assets<StandardMaterial>>,
+    asset_server: Res<AssetServer>,
     mut commands: Commands,
 ) {
     commands
-        .spawn(PbrBundle {
-            mesh: meshes.add(Mesh::from(shape::Capsule::default())),
-            material: materials.add(StandardMaterial::default()),
-            transform: Transform::from_xyz(0.0, 1.0, 0.0),
+        .spawn(SceneBundle {
+            scene: asset_server.load("character.glb#Scene0"),
             ..default()
         })
         .insert(Player)
         .insert(RigidBody::Dynamic)
-        .insert(Collider::capsule(-Vec3::Y / 2.0, Vec3::Y / 2.0, 0.5))
+        .insert(Collider::capsule(Vec3::Y * 0.5, 1.5 * Vec3::Y, 0.5))
         .insert(GravityScale(0.0))
         .insert(Velocity::default())
         .insert(Name::from("Player"));
@@ -40,6 +37,7 @@ fn spawn_player(
     commands.spawn(DirectionalLightBundle {
         directional_light: DirectionalLight {
             illuminance: 5000.0,
+            shadows_enabled: true,
             ..default()
         },
         transform: Transform::from_xyz( 0.0, 5.0, 5.0).looking_at(Vec3::ZERO, Vec3::Y),
@@ -50,10 +48,11 @@ fn spawn_player(
 fn move_player(
     movement_settings: Res<MovementSettings>,
     input_values: Res<InputValues>,
-    mut query: Query<&mut Velocity, With<Player>>,
+    mut query: Query<(&mut Velocity, &mut Transform), With<Player>>,
 ) {
-    for mut velocity in &mut query {
+    for (mut velocity, mut transform) in &mut query {
         velocity.linvel = Vec3::new(input_values.movement.x, 0.0, input_values.movement.y) * movement_settings.speed;
+        transform.look_at(input_values.mouse_position, Vec3::Y);
     }
 }
 
