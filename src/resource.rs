@@ -4,6 +4,7 @@ use bevy::prelude::*;
 pub struct InputValues {
     pub movement: Vec2,
     pub mouse_pressed: bool,
+    pub mouse_position: Vec2,
 }
 
 impl InputValues {
@@ -11,6 +12,7 @@ impl InputValues {
         Self {
             movement: Vec2::default(),
             mouse_pressed: false,
+            mouse_position: Vec2::default()
         }
     }
 }

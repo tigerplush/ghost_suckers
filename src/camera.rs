@@ -1,6 +1,6 @@
 use bevy::prelude::*;
 
-use crate::{resource::CameraSettings, component::Player};
+use crate::{resource::CameraSettings, component::{Player, FollowCamera}};
 
 pub struct FollowCameraPlugin;
 
@@ -11,8 +11,6 @@ impl Plugin for FollowCameraPlugin {
     }
 }
 
-#[derive(Component)]
-struct FollowCamera;
 
 fn spawn_camera(
     camera_settings: Res<CameraSettings>,
