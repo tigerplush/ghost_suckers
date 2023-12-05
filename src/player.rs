@@ -1,7 +1,7 @@
 use bevy::prelude::*;
 use bevy_rapier3d::prelude::*;
 
-use crate::{resource::InputValues, component::Player};
+use crate::{resource::{InputValues, Stats}, component::Player};
 
 pub struct PlayerPlugin;
 
@@ -9,7 +9,7 @@ impl Plugin for PlayerPlugin {
     fn build(&self, app: &mut App) {
         app.insert_resource(MovementSettings { speed: 5.0 })
             .add_systems(Startup, spawn_player)
-            .add_systems(Update, move_player);
+            .add_systems(Update, (move_player, check_health));
     }
 }
 
@@ -54,5 +54,17 @@ fn move_player(
 ) {
     for mut velocity in &mut query {
         velocity.linvel = Vec3::new(input_values.movement.x, 0.0, input_values.movement.y) * movement_settings.speed;
+    }
+}
+
+fn check_health(
+    stats: Res<Stats>,
+    query: Query<Entity, With<Player>>,
+    mut commands: Commands,
+) {
+    if stats.health <= 0.0 {
+        for player in &query {
+            commands.entity(player).despawn_recursive();
+        }
     }
 }

@@ -8,6 +8,7 @@ use input::InputPlugin;
 use map_generation::MapGeneratorPlugin;
 use player::PlayerPlugin;
 use resource::*;
+use ui::UiPlugin;
 
 mod camera;
 mod component;
@@ -16,6 +17,7 @@ mod input;
 mod map_generation;
 mod player;
 mod resource;
+mod ui;
 
 fn main() {
     App::new()
@@ -24,6 +26,7 @@ fn main() {
             offset: Vec3 { x: 0.0, y: 10.0, z: 10.0 },
             ..default()
         })
+        .insert_resource(Stats::new())
         .add_plugins((
             DefaultPlugins,
             WorldInspectorPlugin::new(),
@@ -34,6 +37,7 @@ fn main() {
             PlayerPlugin,
             MapGeneratorPlugin,
             EnemyPlugin,
+            UiPlugin,
         ))
         .run();
 }

@@ -32,3 +32,16 @@ impl CameraSettings {
         }
     }
 }
+
+#[derive(Resource)]
+pub struct Stats {
+    pub health: f32,
+}
+
+impl Stats {
+    pub fn new() -> Self {
+        Self {
+            health: 100.0,
+        }
+    }
+}
