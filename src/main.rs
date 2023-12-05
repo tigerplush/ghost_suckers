@@ -3,6 +3,7 @@ use bevy_inspector_egui::quick::WorldInspectorPlugin;
 use bevy_rapier3d::prelude::*;
 use bevy_rand::prelude::*;
 use bevy_prng::ChaCha8Rng;
+use bevy_scene_hook::HookPlugin;
 
 use camera::FollowCameraPlugin;
 use enemy::EnemyPlugin;
@@ -35,6 +36,7 @@ fn main() {
             RapierPhysicsPlugin::<NoUserData>::default(),
             RapierDebugRenderPlugin::default(),
             EntropyPlugin::<ChaCha8Rng>::default(),
+            HookPlugin,
             FollowCameraPlugin,
             InputPlugin,
             PlayerPlugin,

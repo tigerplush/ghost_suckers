@@ -1,5 +1,6 @@
 use bevy::prelude::*;
 use bevy_rapier3d::prelude::*;
+use bevy_scene_hook::{SceneHook, HookedSceneBundle};
 
 use crate::{resource::{InputValues, Stats}, component::Player};
 
@@ -18,14 +19,25 @@ struct MovementSettings {
     pub speed: f32,
 }
 
+#[derive(Component)]
+struct Nozzle;
+
 fn spawn_player(
     asset_server: Res<AssetServer>,
     mut commands: Commands,
 ) {
     commands
-        .spawn(SceneBundle {
-            scene: asset_server.load("character.glb#Scene0"),
-            ..default()
+        .spawn(HookedSceneBundle {
+            scene: SceneBundle {
+                scene: asset_server.load("character.glb#Scene0"),
+                ..default()
+            },
+            hook: SceneHook::new(|entity, cmds| {
+                match entity.get::<Name>().map(|t| t.as_str()) {
+                    Some("Nozzle") => cmds.insert(Nozzle),
+                    _ => cmds,
+                };
+            }),
         })
         .insert(Player)
         .insert(RigidBody::Dynamic)
