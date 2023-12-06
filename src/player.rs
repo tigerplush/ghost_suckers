@@ -1,8 +1,8 @@
 use bevy::prelude::*;
-use bevy_rapier3d::prelude::*;
+use bevy_rapier3d::{prelude::*, rapier::geometry::ColliderShape};
 use bevy_scene_hook::{SceneHook, HookedSceneBundle};
 
-use crate::{resource::{InputValues, Stats}, component::Player};
+use crate::{resource::{InputValues, Stats}, component::{Player, Nozzle}};
 
 pub struct PlayerPlugin;
 
@@ -10,7 +10,7 @@ impl Plugin for PlayerPlugin {
     fn build(&self, app: &mut App) {
         app.insert_resource(MovementSettings { speed: 5.0 })
             .add_systems(Startup, spawn_player)
-            .add_systems(Update, (move_player, check_health));
+            .add_systems(Update, (move_player, check_health, handle_vacuum));
     }
 }
 
@@ -18,9 +18,6 @@ impl Plugin for PlayerPlugin {
 struct MovementSettings {
     pub speed: f32,
 }
-
-#[derive(Component)]
-struct Nozzle;
 
 fn spawn_player(
     asset_server: Res<AssetServer>,
@@ -34,7 +31,16 @@ fn spawn_player(
             },
             hook: SceneHook::new(|entity, cmds| {
                 match entity.get::<Name>().map(|t| t.as_str()) {
-                    Some("Nozzle") => cmds.insert(Nozzle),
+                    Some("Nozzle") => {
+                        cmds.with_children( |parent| {
+                            parent.spawn(Collider::from(ColliderShape::cone(1.0, 1.0)))
+                            //.insert(RigidBody::KinematicPositionBased)
+                            .insert(Nozzle)
+                            .insert(ColliderDisabled)
+                            .insert(TransformBundle::from(Transform::from_xyz(0.0, 0.0, 0.0)));
+                        });
+                        cmds
+                    },
                     _ => cmds,
                 };
             }),
@@ -45,6 +51,7 @@ fn spawn_player(
         .insert(GravityScale(0.0))
         .insert(Velocity::default())
         .insert(Name::from("Player"));
+
 
     commands.spawn(DirectionalLightBundle {
         directional_light: DirectionalLight {
@@ -65,6 +72,21 @@ fn move_player(
     for (mut velocity, mut transform) in &mut query {
         velocity.linvel = Vec3::new(input_values.movement.x, 0.0, input_values.movement.y) * movement_settings.speed;
         transform.look_at(input_values.mouse_position, Vec3::Y);
+    }
+}
+
+fn handle_vacuum(
+    input_values: Res<InputValues>,
+    query: Query<Entity, With<Nozzle>>,
+    mut commands: Commands,
+) {
+    for e in &query {
+        if input_values.mouse_pressed {
+            commands.entity(e).remove::<ColliderDisabled>();
+        }
+        else {
+            commands.entity(e).insert(ColliderDisabled);
+        }
     }
 }
 

@@ -7,7 +7,7 @@ pub struct UiPlugin;
 impl Plugin for UiPlugin {
     fn build(&self, app: &mut App) {
         app.add_systems(Startup, setup)
-            .add_systems(Update, update_health);
+            .add_systems(Update, update_stats);
     }
 }
 
@@ -30,7 +30,7 @@ fn setup(
     .insert(HealthText);
 }
 
-fn update_health(
+fn update_stats(
     stats: Res<Stats>,
     mut query: Query<&mut Text, With<HealthText>>,
 ) {

@@ -6,6 +6,7 @@ use bevy_prng::ChaCha8Rng;
 use bevy_scene_hook::HookPlugin;
 
 use camera::FollowCameraPlugin;
+use collision_events::CollisionPlugin;
 use enemy::EnemyPlugin;
 use input::InputPlugin;
 use map_generation::MapGeneratorPlugin;
@@ -14,6 +15,7 @@ use resource::*;
 use ui::UiPlugin;
 
 mod camera;
+mod collision_events;
 mod component;
 mod enemy;
 mod input;
@@ -43,6 +45,7 @@ fn main() {
             MapGeneratorPlugin,
             EnemyPlugin,
             UiPlugin,
+            CollisionPlugin,
         ))
         .run();
 }
