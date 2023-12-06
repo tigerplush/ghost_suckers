@@ -6,8 +6,12 @@ graveyard font: https://www.1001fonts.com/graveyard-brk-font.html
 vacuum robot
 
 # todo
-camera shake
-normalize distance of sucked ghosts
 show vacuuming
 sound
 map-generation
+enemy wave spawner
+
+# nice to have
+reload time
+camera shake
+normalize distance of sucked ghosts

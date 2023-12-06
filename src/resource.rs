@@ -25,7 +25,6 @@ pub struct CameraSettings {
     pub translational_strength: f32,
     pub rotational_shake: f32,
     pub offset: Vec3,
-    pub camera_shake: f32,
 }
 
 impl CameraSettings {
@@ -36,7 +35,6 @@ impl CameraSettings {
             translational_strength: 1.0,
             rotational_shake: 0.0,
             offset: Vec3::ZERO,
-            camera_shake: 0.0,
         }
     }
 
