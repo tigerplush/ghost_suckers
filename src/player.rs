@@ -2,7 +2,7 @@ use bevy::prelude::*;
 use bevy_rapier3d::{prelude::*, rapier::geometry::ColliderShape};
 use bevy_scene_hook::{SceneHook, HookedSceneBundle};
 
-use crate::{resource::{InputValues, Stats}, component::{Player, Nozzle}};
+use crate::{resource::{InputValues, Stats, CameraSettings}, component::{Player, Nozzle}};
 
 pub struct PlayerPlugin;
 
@@ -76,13 +76,16 @@ fn move_player(
 }
 
 fn handle_vacuum(
+    time: Res<Time>,
     input_values: Res<InputValues>,
+    mut camera_settings: ResMut<CameraSettings>,
     query: Query<Entity, With<Nozzle>>,
     mut commands: Commands,
 ) {
     for e in &query {
         if input_values.mouse_pressed {
             commands.entity(e).remove::<ColliderDisabled>();
+            camera_settings.translational_shake += time.delta_seconds();
         }
         else {
             commands.entity(e).insert(ColliderDisabled);

@@ -1,6 +1,6 @@
 use bevy::prelude::*;
 
-use crate::{resource::CameraSettings, component::{Player, FollowCamera}};
+use crate::{resource::CameraSettings, component::{Player, FollowCamera}, common::Random};
 
 pub struct FollowCameraPlugin;
 
@@ -24,13 +24,15 @@ fn spawn_camera(
 }
 
 fn update_camera(
-    camera_settings: Res<CameraSettings>,
+    time: Res<Time>,
+    mut camera_settings: ResMut<CameraSettings>,
     player_query: Query<&Transform, (With<Player>, Without<FollowCamera>)>,
     mut camera_query: Query<&mut Transform, (With<FollowCamera>, Without<Player>)>,
 ) {
     if let Ok(player) = player_query.get_single() {
         for mut camera in &mut camera_query {
-            camera.translation = player.translation + camera_settings.offset;
+            camera.translation = player.translation + camera_settings.offset + Vec3::random() * camera_settings.translational_shake * camera_settings.translational_strength;
+            camera_settings.tick(time.delta());
         }
     }
 }

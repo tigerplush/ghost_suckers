@@ -6,7 +6,7 @@ use bevy_rand::resource::GlobalEntropy;
 use bevy_rapier3d::prelude::*;
 use rand_core::RngCore;
 
-use crate::{component::{Player, Ghost, Nozzle}, collision_events::{CollideWithPlayer, SuckEvent}};
+use crate::{component::{Player, Ghost, Nozzle}, collision_events::{CollideWithPlayer, SuckEvent}, common::*, resource::{Stats, CameraSettings}};
 
 pub struct EnemyPlugin;
 
@@ -15,12 +15,13 @@ impl Plugin for EnemyPlugin {
         app.insert_resource(GhostSpawnConfig {
             timer: Timer::new(Duration::from_secs_f32(0.5), TimerMode::Repeating),
         })
-        .insert_resource(GhostConfig {
+        .insert_resource(GhostConfig { 
             speed: 1.0,
             sucking_speed: 2.0,
             sucking_time: 1.0,
             height_offset: 1.0,
             height_map: (-0.5, 0.5),
+            camera_shake: 0.0,
         })
         .add_systems(Update, (
             spawn_enemy,
@@ -46,17 +47,8 @@ struct GhostConfig {
     sucking_time: f32,
     sucking_speed: f32,
     height_offset: f32,
-    height_map: (f32, f32)
-}
-
-trait Remap<T = Self> {
-    fn map(&self, from: (T, T), to: (T, T)) -> Self;
-}
-
-impl Remap for f32 {
-    fn map(&self, from: (Self, Self), to: (Self, Self)) -> Self {
-        to.0 + (self - from.0) * (to.1 - to.0) / (from.1 - from.0)
-    }
+    height_map: (f32, f32),
+    camera_shake: f32,
 }
 
 fn move_enemies(
@@ -67,7 +59,7 @@ fn move_enemies(
 ) {
     for (mut ghost, mut timer) in &mut query {
         timer.tick(time.delta());
-        let height = timer.elapsed_secs().sin().map((-1.0, 1.0), config.height_map) + config.height_offset;
+        let height = timer.elapsed_secs().sin().remap((-1.0, 1.0), config.height_map) + config.height_offset;
 
         let mut direction = Vec3::ZERO;
         if let Ok(player) = player_query.get_single() {
@@ -122,7 +114,9 @@ fn detect_collisions(
     mut commands: Commands,
 ) {
     for collision_event in collision_events.read() {
-        commands.entity(collision_event.0).despawn_recursive();
+        if let Some(entity) = commands.get_entity(collision_event.0) {
+            entity.despawn_recursive();
+        }
     }
 }
 
@@ -156,6 +150,8 @@ fn detect_suckage(
 fn update_suckage(
     time: Res<Time>,
     config: Res<GhostConfig>,
+    mut stats: ResMut<Stats>,
+    mut camera_settings: ResMut<CameraSettings>,
     mut rng: ResMut<GlobalEntropy<ChaCha8Rng>>,
     mut query: Query<(&mut SuckTimer, &mut Transform, Entity), Without<Nozzle>>,
     nozzles: Query<&GlobalTransform, With<Nozzle>>,
@@ -171,6 +167,8 @@ fn update_suckage(
         transform.translation += direction;
         if timer.finished() {
             commands.entity(entity).despawn_recursive();
+            stats.sucked_ghosts += 1;
+            camera_settings.add(config.camera_shake);
         }
     }
 }

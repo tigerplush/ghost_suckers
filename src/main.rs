@@ -23,12 +23,14 @@ mod map_generation;
 mod player;
 mod resource;
 mod ui;
+mod common;
 
 fn main() {
     App::new()
         .insert_resource(InputValues::new())
         .insert_resource(CameraSettings {
             offset: Vec3 { x: 0.0, y: 10.0, z: 10.0 },
+            translational_strength: 1.5,
             ..default()
         })
         .insert_resource(Stats::new())

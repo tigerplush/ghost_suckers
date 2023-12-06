@@ -15,4 +15,5 @@ bevy-scene-hook = "9.0.0"
 bevy_prng = { version = "0.2", features = ["rand_chacha"] }
 bevy_rand = "0.4.0"
 bevy_rapier3d = "0.23.0"
+rand = "0.8.5"
 rand_core = "0.6.4"
