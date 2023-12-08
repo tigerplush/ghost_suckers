@@ -1,15 +1,16 @@
 use bevy::prelude::*;
 use bevy_rapier3d::{prelude::*, rapier::geometry::ColliderShape};
 use bevy_scene_hook::{SceneHook, HookedSceneBundle};
+use bevy_hanabi::prelude::*;
 
-use crate::{resource::{InputValues, Stats, CameraSettings}, component::{Player, Nozzle}, events::DamageEvent};
+use crate::{resource::{InputValues, Stats}, component::{Player, Nozzle}, events::{DamageEvent, VacuumEvent}};
 
 pub struct PlayerPlugin;
 
 impl Plugin for PlayerPlugin {
     fn build(&self, app: &mut App) {
         app.insert_resource(MovementSettings { speed: 5.0 })
-            .add_systems(Startup, spawn_player)
+            .add_systems(Startup, (spawn_player, setup_particle))
             .add_systems(Update, (
                 move_player,
                 check_health,
@@ -130,19 +131,20 @@ fn move_player(
 }
 
 fn handle_vacuum(
-    time: Res<Time>,
-    input_values: Res<InputValues>,
-    mut camera_settings: ResMut<CameraSettings>,
+    mut mouse_events: EventReader<VacuumEvent>,
     query: Query<Entity, With<Nozzle>>,
     mut commands: Commands,
 ) {
     for e in &query {
-        if input_values.mouse_pressed {
-            commands.entity(e).remove::<ColliderDisabled>();
-            camera_settings.translational_shake += time.delta_seconds();
-        }
-        else {
-            commands.entity(e).insert(ColliderDisabled);
+        for events in mouse_events.read() {
+            match events {
+                VacuumEvent::Start => {
+                    commands.entity(e).remove::<ColliderDisabled>();
+                }
+                VacuumEvent::Stop => {
+                    commands.entity(e).insert(ColliderDisabled);
+                }
+            }
         }
     }
 }
@@ -168,4 +170,78 @@ fn read_damage(
     for damage_event in damage_events.read() {
         stats.health -= damage_event.0;
     }
+}
+
+fn setup_particle(
+    mut effects: ResMut<Assets<EffectAsset>>,
+    mut commands: Commands,
+) {
+    let effect = create_effect();
+
+    // Insert into the asset system
+    let effect_handle = effects.add(effect);
+
+    commands
+    .spawn(ParticleEffectBundle {
+        effect: ParticleEffect::new(effect_handle),
+        transform: Transform::from_translation(Vec3::Y),
+        ..Default::default()
+    });
+}
+
+fn create_effect() -> EffectAsset {
+    let mut gradient = Gradient::new();
+    gradient.add_key(0.0, Vec4::new(0.5, 0.5, 0.5, 1.0));
+    gradient.add_key(1.0, Vec4::new(0.5, 0.5, 0.5, 0.0));
+
+    // Create a new expression module
+    let mut module = Module::default();
+
+    // On spawn, randomly initialize the position of the particle
+    // to be over the surface of a sphere of radius 2 units.
+    let init_pos = SetPositionSphereModifier {
+        center: module.lit(Vec3::ZERO),
+        radius: module.lit(1.0),
+        dimension: ShapeDimension::Surface,
+    };
+
+    let kill = KillSphereModifier {
+        center: module.lit(Vec3::new(5.0, 5.0, 5.0)),
+        sqr_radius: module.lit(0.1),
+        kill_inside: true,
+    };
+
+    // Initialize the total lifetime of the particle, that is
+    // the time for which it's simulated and rendered. This modifier
+    // is almost always required, otherwise the particles won't show.
+    let lifetime = module.lit(10.); // literal value "10.0"
+    let init_lifetime = SetAttributeModifier::new(
+        Attribute::LIFETIME, lifetime);
+    // Create the effect asset
+    EffectAsset::new(
+        // Maximum number of particles alive at a time
+        32768,
+        // Spawn at a rate of 5 particles per second
+        Spawner::rate(5.0.into()).with_starts_active(false),
+        // Move the expression module into the asset
+        module
+    )
+    .with_name("VacuumEffect")
+    .init(init_pos)
+    .init(init_lifetime)
+    .update(ForceFieldModifier::new(vec![
+        ForceFieldSource {
+            position: Vec3::new(0.0, 0.0, 0.0),
+            max_radius: f32::MAX,
+            min_radius: 0.1,
+            mass: 5.0,
+            force_exponent: 1.0,
+            conform_to_sphere: true,
+        },
+    ]))
+    .update(kill)
+    // Render the particles with a color gradient over their
+    // lifetime. This maps the gradient key 0 to the particle spawn
+    // time, and the gradient key 1 to the particle death (10s).
+    .render(ColorOverLifetimeModifier { gradient })
 }

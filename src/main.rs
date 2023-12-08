@@ -4,6 +4,7 @@ use bevy_rapier3d::prelude::*;
 use bevy_rand::prelude::*;
 use bevy_prng::ChaCha8Rng;
 use bevy_scene_hook::HookPlugin;
+use bevy_hanabi::prelude::*;
 
 use camera::FollowCameraPlugin;
 use collision_events::CollisionPlugin;
@@ -41,6 +42,7 @@ fn main() {
             RapierPhysicsPlugin::<NoUserData>::default(),
             //RapierDebugRenderPlugin::default(),
             EntropyPlugin::<ChaCha8Rng>::default(),
+            HanabiPlugin,
             HookPlugin,
             FollowCameraPlugin,
             InputPlugin,

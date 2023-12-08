@@ -1,13 +1,13 @@
 use bevy::prelude::*;
 
-use crate::{resource::CameraSettings, component::{Player, FollowCamera}, common::Random};
+use crate::{resource::{CameraSettings, InputValues}, component::{Player, FollowCamera}, common::Random};
 
 pub struct FollowCameraPlugin;
 
 impl Plugin for FollowCameraPlugin {
     fn build(&self, app: &mut App) {
         app.add_systems(Startup, spawn_camera)
-            .add_systems(PostUpdate, update_camera);
+            .add_systems(PostUpdate, (update_camera, check_shaking));
     }
 }
 
@@ -34,5 +34,15 @@ fn update_camera(
             camera.translation = player.translation + camera_settings.offset + Vec3::random() * camera_settings.translational_shake * camera_settings.translational_strength;
             camera_settings.tick(time.delta());
         }
+    }
+}
+
+fn check_shaking(
+    time: Res<Time>,
+    input_settings: Res<InputValues>,
+    mut camera_settings: ResMut<CameraSettings>,
+) {
+    if input_settings.mouse_pressed {
+        camera_settings.translational_shake += time.delta_seconds();
     }
 }

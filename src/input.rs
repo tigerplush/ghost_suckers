@@ -1,18 +1,21 @@
-use bevy::{prelude::*, window::PrimaryWindow};
+use bevy::{prelude::*, window::PrimaryWindow, input::{mouse::MouseButtonInput, ButtonState}};
 
-use crate::{resource::InputValues, component::FollowCamera};
+use crate::{resource::InputValues, component::FollowCamera, events::VacuumEvent};
 
 pub struct InputPlugin;
 
 impl Plugin for InputPlugin {
     fn build(&self, app: &mut App) {
-        app.add_systems(Update, update_values);
+        app.add_event::<VacuumEvent>()
+            .add_systems(Update, update_values);
     }
 }
 
 fn update_values(
-    keys: Res<Input<KeyCode>>, mut input_values: ResMut<InputValues>,
-    buttons: Res<Input<MouseButton>>,
+    keys: Res<Input<KeyCode>>,
+    mut input_values: ResMut<InputValues>,
+    mut mouse_events: EventReader<MouseButtonInput>,
+    mut vacuum_events: EventWriter<VacuumEvent>,
     windows: Query<&Window, With<PrimaryWindow>>,
     cameras: Query<(&Camera, &GlobalTransform), With<FollowCamera>>,
 ) {
@@ -31,7 +34,23 @@ fn update_values(
     }
 
     input_values.movement = movement.normalize_or_zero();
-    input_values.mouse_pressed = buttons.pressed(MouseButton::Left);
+
+    for event in mouse_events.read() {
+        match event.state {
+            ButtonState::Pressed => {
+                if event.button == MouseButton::Left {
+                    input_values.mouse_pressed = true;
+                    vacuum_events.send(VacuumEvent::Start);
+                }
+            }
+            ButtonState::Released => {
+                if event.button == MouseButton::Left {
+                    input_values.mouse_pressed = false;
+                    vacuum_events.send(VacuumEvent::Stop);
+                }
+            }
+        }
+    }
 
     let (camera, camera_transform) = cameras.single();
     let ground_transform = GlobalTransform::default();
