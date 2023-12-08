@@ -104,6 +104,7 @@ fn spawn_enemy(
         .insert(Collider::capsule(Vec3::Y / -4.0, Vec3::Y / 4.0, 0.25))
         //.insert(RigidBody::KinematicPositionBased)
         .insert(Sensor)
+        .insert(CollisionGroups::new(Group::GROUP_2, Group::GROUP_1 | Group::GROUP_3))
         .insert(ActiveEvents::COLLISION_EVENTS)
         .insert(FloatTimer(Stopwatch::new()));
     }

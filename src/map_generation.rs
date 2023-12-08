@@ -26,12 +26,19 @@ fn spawn_first(
             match entity.get::<Name>().map(|t| t.as_str()) {
                 Some(string) => {
                     if string.starts_with("FenceSection") {
-                        cmds.insert(Collider::from(ColliderShape::cuboid(1.5, 1.0, 0.5)));
+                        cmds.insert(Collider::from(ColliderShape::cuboid(1.5, 1.0, 0.25)));
                     }
                     else if string.starts_with("Column") {
                         cmds.insert(Collider::from(ColliderShape::cuboid(0.25, 1.0, 0.25)));
                     }
+                    else if string.starts_with("Grave") {
+                        cmds.insert(Collider::from(ColliderShape::cuboid(0.4, 0.5, 0.8)));
+                    }
+                    else if string.starts_with("Tombstone") {
+                        cmds.insert(Collider::from(ColliderShape::cuboid(0.25, 0.5, 0.25)));
+                    }
                     cmds
+                    .insert(CollisionGroups::new(Group::GROUP_4, Group::GROUP_1))
                 },
                 _ => cmds,
             };
@@ -41,6 +48,7 @@ fn spawn_first(
     .with_children(|parent| {
         parent.spawn(Collider::from(ColliderShape::cuboid(16.0, 1.0, 0.5)))
         .insert(TransformBundle::from(Transform::from_xyz(0.0, 1.0, 10.0)))
-        .insert(Name::from("LowerBarrier"));
+        .insert(Name::from("LowerBarrier"))
+        .insert(CollisionGroups::new(Group::GROUP_4, Group::GROUP_1));
     });
 }

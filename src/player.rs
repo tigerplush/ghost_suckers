@@ -19,10 +19,51 @@ struct MovementSettings {
     pub speed: f32,
 }
 
+/// Creates the vertices and the indices of a prism that spans the whole up/down axis
+/// and widens moving out from the origin
+fn create_vacuum_range() -> (Vec<Vect>, Vec<[u32; 3]>) {
+    let vertices = vec![
+        // right hand corners
+        Vect::new(0.5, 0.5, 1.0),
+        Vect::new(1.5, -1.0, 1.0),
+        Vect::new(1.5, -1.0, -1.0),
+        Vect::new(0.5, 0.5, -1.0),
+        // left hand corners
+        Vect::new(-0.5, 0.5, 1.0),
+        Vect::new(-1.5, -1.0, 1.0),
+        Vect::new(-1.5, -1.0, -1.0),
+        Vect::new(-0.5, 0.5, -1.0),
+        ];
+
+    let indices: Vec<[u32; 3]> = vec![
+        // right hand wall
+        [0, 1, 2],
+        [0, 2, 3],
+        // left hand wall
+        [4, 5, 6],
+        [4, 6, 7],
+        //front wall
+        [1, 5, 6],
+        [1, 6, 2],
+        // back wall
+        [0, 4, 7],
+        [0, 7, 3],
+        // top wall,
+        [3, 2, 6],
+        [3, 6, 7],
+        // bottom wall,
+        [0, 1, 5],
+        [0, 5, 4],
+        ];
+
+    (vertices, indices)
+}
+
 fn spawn_player(
     asset_server: Res<AssetServer>,
     mut commands: Commands,
 ) {
+
     commands
         .spawn(HookedSceneBundle {
             scene: SceneBundle {
@@ -33,12 +74,17 @@ fn spawn_player(
                 match entity.get::<Name>().map(|t| t.as_str()) {
                     Some("Nozzle") => {
                         cmds.with_children( |parent| {
+                            // let (vertices, indices) = create_vacuum_range();
+                            // let col = Collider::trimesh(vertices, indices);
                             parent.spawn(Collider::from(ColliderShape::cone(1.0, 1.0)))
+                            //parent.spawn(col)
                             //.insert(RigidBody::KinematicPositionBased)
                             .insert(Nozzle)
                             .insert(ColliderDisabled)
-                            .insert(TransformBundle::from(Transform::from_xyz(0.0, 0.0, 0.0)));
+                            .insert(TransformBundle::from(Transform::from_xyz(0.0, -0.25, 0.0)))
+                            .insert(CollisionGroups::new(Group::GROUP_3, Group::GROUP_2));
                         });
+
                         cmds
                     },
                     _ => cmds,
@@ -47,10 +93,11 @@ fn spawn_player(
         })
         .insert(Player)
         .insert(RigidBody::Dynamic)
-        .insert(LockedAxes::TRANSLATION_LOCKED_Y | LockedAxes::ROTATION_LOCKED_X | LockedAxes::ROTATION_LOCKED_Z)
-        .insert(Collider::capsule(Vec3::Y * 0.5, 1.5 * Vec3::Y, 0.5))
+        .insert(LockedAxes::TRANSLATION_LOCKED_Y | LockedAxes::ROTATION_LOCKED_X | LockedAxes::ROTATION_LOCKED_Y | LockedAxes::ROTATION_LOCKED_Z)
+        .insert(Collider::capsule(Vec3::ZERO, Vec3::Y, 0.25))
         .insert(GravityScale(0.0))
         .insert(Velocity::default())
+        .insert(CollisionGroups::new(Group::GROUP_1, Group::GROUP_2 | Group::GROUP_4))
         .insert(Name::from("Player"));
 
 
