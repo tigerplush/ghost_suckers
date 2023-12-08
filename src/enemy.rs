@@ -25,7 +25,7 @@ impl Plugin for EnemyPlugin {
         })
         .add_event::<DamageEvent>()
         .add_systems(Update, (
-            spawn_enemy,
+            //spawn_enemy,
             move_enemies,
             detect_collisions,
             detect_suckage,
@@ -160,7 +160,6 @@ fn update_suckage(
     config: Res<GhostConfig>,
     mut stats: ResMut<Stats>,
     mut camera_settings: ResMut<CameraSettings>,
-    mut rng: ResMut<GlobalEntropy<ChaCha8Rng>>,
     mut query: Query<(&mut SuckTimer, &mut Transform, Entity), Without<Nozzle>>,
     nozzles: Query<&GlobalTransform, With<Nozzle>>,
     mut commands: Commands,
@@ -168,7 +167,7 @@ fn update_suckage(
     for (mut timer, mut transform, entity) in &mut query {
         timer.tick(time.delta());
         transform.scale = Vec3::ONE * timer.percent_left();
-        transform.rotation = Quat::from_euler(EulerRot::XYZ, rng.next_u32() as f32,rng.next_u32() as f32, rng.next_u32() as f32);
+        transform.rotation = Quat::random();
         let nozzle = nozzles.single();
         let diff = nozzle.translation() - transform.translation;
         let direction = diff.normalize_or_zero() * time.delta_seconds() * config.sucking_speed;

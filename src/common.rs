@@ -1,4 +1,6 @@
-use bevy::math::Vec3;
+use std::f32::consts::PI;
+
+use bevy::prelude::*;
 use rand::prelude::*;
 
 pub trait Remap<T = Self> {
@@ -24,4 +26,20 @@ impl Random for Vec3 {
             z: rng.gen(),
         }
     }
+}
+
+impl Random for Quat {
+    fn random() -> Self {
+        let mut rng = rand::thread_rng();
+        Self::from_euler(bevy::math::EulerRot::XYZ, rng.gen(), rng.gen(), rng.gen())
+    }
+}
+
+pub fn point_in_circle(radius: f32) -> (f32, f32) {
+    let mut rng = rand::thread_rng();
+    let angle = rng.gen_range(0.0..=PI*2.0);
+    let random_radius = rng.gen_range(0.0..radius);
+    let sin = angle.sin() * random_radius;
+    let cos = angle.cos() * random_radius;
+    (sin, cos)
 }
