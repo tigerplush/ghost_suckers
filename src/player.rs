@@ -47,6 +47,7 @@ fn spawn_player(
         })
         .insert(Player)
         .insert(RigidBody::Dynamic)
+        .insert(LockedAxes::TRANSLATION_LOCKED_Y | LockedAxes::ROTATION_LOCKED_X | LockedAxes::ROTATION_LOCKED_Z)
         .insert(Collider::capsule(Vec3::Y * 0.5, 1.5 * Vec3::Y, 0.5))
         .insert(GravityScale(0.0))
         .insert(Velocity::default())
