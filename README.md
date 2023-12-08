@@ -12,12 +12,18 @@ Low Poly Graveyard: https://sketchfab.com/3d-models/low-poly-graveyard-bfa001441
 |        | Vacuum |    ❌   |      ✅     |    ❌   |   ❌  |
 |        | Wall   |    ✅   |      ❌     |    ❌   |   ❌  |
 
+# blender workflow
+For every model there is a .blend file which is the original file.
+It will be saved as _export.blend where all modifiers will be applied.
+From there it will be exported into .glb assets.
+
 # upgrades
 more range depth
 more range width
 more health
 more speed
 less sucking time
+less slowing from damage
 
 # todo
 show vacuuming

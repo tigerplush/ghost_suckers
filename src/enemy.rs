@@ -6,7 +6,7 @@ use bevy_rand::resource::GlobalEntropy;
 use bevy_rapier3d::prelude::*;
 use rand_core::RngCore;
 
-use crate::{component::{Player, Ghost, Nozzle}, collision_events::{CollideWithPlayer, SuckEvent}, common::*, resource::{Stats, CameraSettings}};
+use crate::{component::{Player, Ghost, Nozzle, Damage}, collision_events::{CollideWithPlayer, SuckEvent}, common::*, resource::{Stats, CameraSettings}, events::DamageEvent};
 
 pub struct EnemyPlugin;
 
@@ -23,6 +23,7 @@ impl Plugin for EnemyPlugin {
             height_map: (-0.5, 0.5),
             camera_shake: 0.0,
         })
+        .add_event::<DamageEvent>()
         .add_systems(Update, (
             spawn_enemy,
             move_enemies,
@@ -106,16 +107,22 @@ fn spawn_enemy(
         .insert(Sensor)
         .insert(CollisionGroups::new(Group::GROUP_2, Group::GROUP_1 | Group::GROUP_3))
         .insert(ActiveEvents::COLLISION_EVENTS)
-        .insert(FloatTimer(Stopwatch::new()));
+        .insert(FloatTimer(Stopwatch::new()))
+        .insert(Damage(10.0));
     }
 }
 
 fn detect_collisions(
     mut collision_events: EventReader<CollideWithPlayer>,
+    mut damage_events: EventWriter<DamageEvent>,
+    damages: Query<&Damage>,
     mut commands: Commands,
 ) {
     for collision_event in collision_events.read() {
         if let Some(entity) = commands.get_entity(collision_event.0) {
+            if let Ok(damage) = damages.get(collision_event.0) {
+                damage_events.send(DamageEvent(damage.0));
+            }
             entity.despawn_recursive();
         }
     }

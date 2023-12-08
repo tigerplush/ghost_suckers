@@ -3,7 +3,6 @@ use bevy::prelude::*;
 #[derive(Component)]
 pub struct Player;
 
-
 #[derive(Component)]
 pub struct FollowCamera;
 
@@ -12,3 +11,6 @@ pub struct Ghost;
 
 #[derive(Component)]
 pub struct Nozzle;
+
+#[derive(Component)]
+pub struct Damage(pub f32);

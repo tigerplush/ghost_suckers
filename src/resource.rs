@@ -51,15 +51,27 @@ impl CameraSettings {
 
 #[derive(Resource)]
 pub struct Stats {
+    pub max_health: f32,
     pub health: f32,
+    pub regeneration: f32,
     pub sucked_ghosts: u32,
 }
 
 impl Stats {
     pub fn new() -> Self {
         Self {
+            max_health: 100.0,
             health: 100.0,
+            regeneration: 1.0,
             sucked_ghosts: 0,
         }
+    }
+
+    pub fn normalized_health(&self) -> f32 {
+        self.health / self.max_health
+    }
+
+    pub fn regenerate(&mut self, value: f32) {
+        self.health = (self.health + value * self.regeneration).clamp(0.0, self.max_health);
     }
 }

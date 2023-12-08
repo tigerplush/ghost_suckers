@@ -18,6 +18,7 @@ mod camera;
 mod collision_events;
 mod component;
 mod enemy;
+mod events;
 mod input;
 mod map_generation;
 mod player;
@@ -36,9 +37,9 @@ fn main() {
         .insert_resource(Stats::new())
         .add_plugins((
             DefaultPlugins,
-            WorldInspectorPlugin::new(),
+            //WorldInspectorPlugin::new(),
             RapierPhysicsPlugin::<NoUserData>::default(),
-            RapierDebugRenderPlugin::default(),
+            //RapierDebugRenderPlugin::default(),
             EntropyPlugin::<ChaCha8Rng>::default(),
             HookPlugin,
             FollowCameraPlugin,

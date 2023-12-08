@@ -2,7 +2,7 @@ use bevy::prelude::*;
 use bevy_rapier3d::{prelude::*, rapier::geometry::ColliderShape};
 use bevy_scene_hook::{SceneHook, HookedSceneBundle};
 
-use crate::{resource::{InputValues, Stats, CameraSettings}, component::{Player, Nozzle}};
+use crate::{resource::{InputValues, Stats, CameraSettings}, component::{Player, Nozzle}, events::DamageEvent};
 
 pub struct PlayerPlugin;
 
@@ -10,7 +10,12 @@ impl Plugin for PlayerPlugin {
     fn build(&self, app: &mut App) {
         app.insert_resource(MovementSettings { speed: 5.0 })
             .add_systems(Startup, spawn_player)
-            .add_systems(Update, (move_player, check_health, handle_vacuum));
+            .add_systems(Update, (
+                move_player,
+                check_health,
+                handle_vacuum,
+                read_damage,
+            ));
     }
 }
 
@@ -103,7 +108,7 @@ fn spawn_player(
 
     commands.spawn(DirectionalLightBundle {
         directional_light: DirectionalLight {
-            illuminance: 5000.0,
+            illuminance: 1000.0,
             shadows_enabled: true,
             ..default()
         },
@@ -113,12 +118,13 @@ fn spawn_player(
 }
 
 fn move_player(
+    stats: Res<Stats>,
     movement_settings: Res<MovementSettings>,
     input_values: Res<InputValues>,
     mut query: Query<(&mut Velocity, &mut Transform), With<Player>>,
 ) {
     for (mut velocity, mut transform) in &mut query {
-        velocity.linvel = Vec3::new(input_values.movement.x, 0.0, input_values.movement.y) * movement_settings.speed;
+        velocity.linvel = Vec3::new(input_values.movement.x, 0.0, input_values.movement.y) * movement_settings.speed * stats.normalized_health();
         transform.look_at(input_values.mouse_position, Vec3::Y);
     }
 }
@@ -142,13 +148,24 @@ fn handle_vacuum(
 }
 
 fn check_health(
-    stats: Res<Stats>,
+    time: Res<Time>,
+    mut stats: ResMut<Stats>,
     query: Query<Entity, With<Player>>,
     mut commands: Commands,
 ) {
+    stats.regenerate(time.delta_seconds());
     if stats.health <= 0.0 {
         for player in &query {
             commands.entity(player).despawn_recursive();
         }
+    }
+}
+
+fn read_damage(
+    mut stats: ResMut<Stats>,
+    mut damage_events: EventReader<DamageEvent>
+) {
+    for damage_event in damage_events.read() {
+        stats.health -= damage_event.0;
     }
 }
