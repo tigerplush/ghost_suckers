@@ -81,7 +81,7 @@ fn spawn_update(
         .insert(FloatTimer::new())
         .insert(Collider::ball(1.0))
         .insert(Sensor)
-        .insert(CollisionGroups::new(Group::GROUP_2, Group::GROUP_1 | Group::GROUP_3))
+        .insert(CollisionGroups::new(Group::GROUP_5, Group::GROUP_3))
         .insert(ActiveEvents::COLLISION_EVENTS)
         .insert(Suckable);
 
@@ -95,7 +95,7 @@ fn spawn_update(
         .insert(FloatTimer::new())
         .insert(Collider::ball(1.0))
         .insert(Sensor)
-        .insert(CollisionGroups::new(Group::GROUP_2, Group::GROUP_1 | Group::GROUP_3))
+        .insert(CollisionGroups::new(Group::GROUP_5, Group::GROUP_3))
         .insert(ActiveEvents::COLLISION_EVENTS)
         .insert(Suckable);
     }

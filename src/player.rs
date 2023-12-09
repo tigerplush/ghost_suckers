@@ -43,7 +43,7 @@ fn spawn_player(
                             .insert(Nozzle)
                             .insert(ColliderDisabled)
                             .insert(TransformBundle::from(Transform::from_xyz(0.0, -0.25, 0.0)))
-                            .insert(CollisionGroups::new(Group::GROUP_3, Group::GROUP_2));
+                            .insert(CollisionGroups::new(Group::GROUP_3, Group::GROUP_2 | Group::GROUP_5));
                         });
 
                         cmds

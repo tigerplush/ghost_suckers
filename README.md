@@ -5,13 +5,13 @@ Low Poly Graveyard: https://sketchfab.com/3d-models/low-poly-graveyard-bfa001441
 frost overlay: <a href="https://www.freepik.com/free-photo/ice-surface-texture-macro-shot-blue-wallpaper_11435892.htm#query=frozen%20overlay&position=3&from_view=keyword&track=ais&uuid=54d1f929-4130-4536-8497-a762ecaffee2">Image by rawpixel.com</a> on Freepik
 
 # collisions
-|        |        |        | Membership |        |      |
-|--------|--------|--------|------------|--------|------|
-|        |        | Player | Ghost      | Vacuum | Wall |
-|        | Player |    ❌   |      ✅     |    ❌   |   ✅  |
-| Filter | Ghost  |    ✅   |      ❌     |    ✅   |   ❌  |
-|        | Vacuum |    ❌   |      ✅     |    ❌   |   ❌  |
-|        | Wall   |    ✅   |      ❌     |    ❌   |   ❌  |
+|        |        |        | Membership |        |      |         |
+|--------|--------|--------|------------|--------|------|---------|
+|        |        | Player | Ghost      | Vacuum | Wall | Upgrade |
+|        | Player |    ❌   |      ✅     |    ❌   |   ✅  |   ❌  |
+| Filter | Ghost  |    ✅   |      ❌     |    ✅   |   ❌  |   ❌  |
+|        | Vacuum |    ❌   |      ✅     |    ❌   |   ❌  |   ✅  |
+|        | Wall   |    ✅   |      ❌     |    ❌   |   ❌  |   ❌  |
 
 # blender workflow
 For every model there is a .blend file which is the original file.
@@ -21,19 +21,22 @@ From there it will be exported into .glb assets.
 # upgrades
 more range depth
 more range width
-more health
-more speed
-less sucking time
 less slowing from damage
 
 # todo
 sound
-enemy wave spawner
+show what upgrades do (https://bevyengine.org/examples/3D%20Rendering/blend-modes/)
+don't regenerate health during upgrade picking
+spawn pickups only when the last ghost vanished
+model pickup
+
+# bugs
+despawning upgrade gives warning
 
 # nice to have
 map-generation
 reload time
-camera shake
+rotational camera shake
 normalize distance of sucked ghosts
 
 # experiments
