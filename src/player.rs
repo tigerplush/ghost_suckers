@@ -1,9 +1,6 @@
 use bevy::prelude::*;
-use bevy_prng::ChaCha8Rng;
-use bevy_rand::resource::GlobalEntropy;
 use bevy_rapier3d::{prelude::*, rapier::geometry::ColliderShape};
 use bevy_scene_hook::{SceneHook, HookedSceneBundle};
-use rand_core::RngCore;
 
 use crate::{resource::{InputValues, Stats}, component::{Player, Nozzle}, events::{DamageEvent, VacuumEvent}, common::{Random, point_in_circle}};
 
@@ -157,7 +154,6 @@ struct VacuumParticle;
 
 fn spawn_vacuum_effect(
     input_values: Res<InputValues>,
-    mut rng: ResMut<GlobalEntropy<ChaCha8Rng>>,
     mut meshes: ResMut<Assets<Mesh>>,
     mut materials: ResMut<Assets<StandardMaterial>>,
     query: Query<&GlobalTransform, With<Nozzle>>,

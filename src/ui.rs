@@ -17,6 +17,9 @@ struct HealthText;
 #[derive(Component)]
 struct GhostText;
 
+#[derive(Component)]
+struct FrostOverlay;
+
 fn setup(
     asset_server: Res<AssetServer>,
     mut commands: Commands,
@@ -69,12 +72,28 @@ fn setup(
         }),
         GhostText,
     ));
+
+    commands.spawn(
+        ImageBundle {
+            style: Style {
+                width: Val::Percent(100.0),
+                position_type: PositionType::Absolute,
+                justify_content: JustifyContent::Center,
+                ..default()
+            },
+            background_color: Color::rgba(1.0, 1.0, 1.0, 0.0).into(),
+            image: UiImage::from(asset_server.load("frost-overlay.png")),
+            ..default()
+        }
+    )
+    .insert(FrostOverlay);
 }
 
 fn update_stats(
     stats: Res<Stats>,
     mut health: Query<&mut Text, (With<HealthText>, Without<GhostText>)>,
     mut ghosts: Query<&mut Text, (With<GhostText>, Without<HealthText>)>,
+    mut overlays: Query<&mut BackgroundColor, With<FrostOverlay>>,
 ) {
     for mut text in &mut health {
         text.sections[1].value = format!("{0:.0}", stats.health);
@@ -82,5 +101,9 @@ fn update_stats(
 
     for mut text in &mut ghosts {
         text.sections[0].value = format!("{}", stats.sucked_ghosts);
+    }
+
+    for mut overlay in &mut overlays {
+        overlay.0 = Color::rgba(1.0, 1.0, 1.0, 1.0 - stats.normalized_health()).into();
     }
 }

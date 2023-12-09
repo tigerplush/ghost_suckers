@@ -32,6 +32,7 @@ fn main() {
         .insert_resource(CameraSettings {
             offset: Vec3 { x: 0.0, y: 10.0, z: 10.0 },
             translational_strength: 1.5,
+            falloff: 1.05,
             ..default()
         })
         .insert_resource(Stats::new())
@@ -39,7 +40,7 @@ fn main() {
             DefaultPlugins,
             WorldInspectorPlugin::new(),
             RapierPhysicsPlugin::<NoUserData>::default(),
-            //RapierDebugRenderPlugin::default(),
+            RapierDebugRenderPlugin::default(),
             EntropyPlugin::<ChaCha8Rng>::default(),
             HookPlugin,
             FollowCameraPlugin,

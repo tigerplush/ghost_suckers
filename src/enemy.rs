@@ -25,7 +25,7 @@ impl Plugin for EnemyPlugin {
         })
         .add_event::<DamageEvent>()
         .add_systems(Update, (
-            //spawn_enemy,
+            spawn_enemy,
             move_enemies,
             detect_collisions,
             detect_suckage,

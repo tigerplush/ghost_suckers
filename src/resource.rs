@@ -25,6 +25,7 @@ pub struct CameraSettings {
     pub translational_strength: f32,
     pub rotational_shake: f32,
     pub offset: Vec3,
+    pub falloff: f32,
 }
 
 impl CameraSettings {
@@ -35,12 +36,13 @@ impl CameraSettings {
             translational_strength: 1.0,
             rotational_shake: 0.0,
             offset: Vec3::ZERO,
+            falloff: 1.1,
         }
     }
 
     pub fn tick(&mut self, time: Duration) {
-        self.translational_shake = (self.translational_shake - time.as_secs_f32()).max(0.0);
-        self.rotational_shake = (self.rotational_shake - time.as_secs_f32()).max(0.0);
+        self.translational_shake = (self.translational_shake / self.falloff - time.as_secs_f32()).max(0.0);
+        self.rotational_shake = (self.rotational_shake / self.falloff - time.as_secs_f32()).max(0.0);
     }
 
     pub fn add(&mut self, value: f32) {
