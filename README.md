@@ -35,3 +35,50 @@ map-generation
 reload time
 camera shake
 normalize distance of sucked ghosts
+
+# experiments
+## code
+```Rust
+
+/// Creates the vertices and the indices of a prism that spans the whole up/down axis
+/// and widens moving out from the origin
+fn create_vacuum_range() -> (Vec<Vect>, Vec<[u32; 3]>) {
+    let vertices = vec![
+        // right hand corners
+        Vect::new(0.5, 0.5, 1.0),
+        Vect::new(1.5, -1.0, 1.0),
+        Vect::new(1.5, -1.0, -1.0),
+        Vect::new(0.5, 0.5, -1.0),
+        // left hand corners
+        Vect::new(-0.5, 0.5, 1.0),
+        Vect::new(-1.5, -1.0, 1.0),
+        Vect::new(-1.5, -1.0, -1.0),
+        Vect::new(-0.5, 0.5, -1.0),
+        ];
+
+    let indices: Vec<[u32; 3]> = vec![
+        // right hand wall
+        [0, 1, 2],
+        [0, 2, 3],
+        // left hand wall
+        [4, 5, 6],
+        [4, 6, 7],
+        //front wall
+        [1, 5, 6],
+        [1, 6, 2],
+        // back wall
+        [0, 4, 7],
+        [0, 7, 3],
+        // top wall,
+        [3, 2, 6],
+        [3, 6, 7],
+        // bottom wall,
+        [0, 1, 5],
+        [0, 5, 4],
+        ];
+
+    (vertices, indices)
+}
+```
+
+This code creates a prettier collision shape for the vacuum, but has some issues I didn't have time to debug.

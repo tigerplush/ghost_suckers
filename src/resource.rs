@@ -51,12 +51,14 @@ impl CameraSettings {
     }
 }
 
-#[derive(Resource)]
+#[derive(Debug, Resource)]
 pub struct Stats {
     pub max_health: f32,
     pub health: f32,
     pub regeneration: f32,
     pub sucked_ghosts: u32,
+    pub suck_time: f32,
+    pub movement_speed: f32,
 }
 
 impl Stats {
@@ -66,6 +68,8 @@ impl Stats {
             health: 100.0,
             regeneration: 1.0,
             sucked_ghosts: 0,
+            suck_time: 1.0,
+            movement_speed: 5.0,
         }
     }
 
@@ -75,5 +79,9 @@ impl Stats {
 
     pub fn regenerate(&mut self, value: f32) {
         self.health = (self.health + value * self.regeneration).clamp(0.0, self.max_health);
+    }
+
+    pub fn add_health_percent(&mut self, value: f32) {
+        self.health = (self.health + self.max_health * value).clamp(0.0, self.max_health);
     }
 }

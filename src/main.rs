@@ -8,15 +8,20 @@ use bevy_scene_hook::HookPlugin;
 use camera::FollowCameraPlugin;
 use collision_events::CollisionPlugin;
 use enemy::EnemyPlugin;
+use enemy_spawner::EnemySpawnerPlugin;
 use input::InputPlugin;
 use map_generation::MapGeneratorPlugin;
 use player::PlayerPlugin;
 use resource::*;
 use ui::UiPlugin;
+use upgrade::UpgradePlugin;
+use vacuum::VacuumPlugin;
 
 mod camera;
 mod collision_events;
+mod common;
 mod component;
+mod enemy_spawner;
 mod enemy;
 mod events;
 mod input;
@@ -24,7 +29,8 @@ mod map_generation;
 mod player;
 mod resource;
 mod ui;
-mod common;
+mod upgrade;
+mod vacuum;
 
 fn main() {
     App::new()
@@ -43,6 +49,8 @@ fn main() {
             RapierDebugRenderPlugin::default(),
             EntropyPlugin::<ChaCha8Rng>::default(),
             HookPlugin,
+        ))
+        .add_plugins((
             FollowCameraPlugin,
             InputPlugin,
             PlayerPlugin,
@@ -50,6 +58,9 @@ fn main() {
             EnemyPlugin,
             UiPlugin,
             CollisionPlugin,
+            EnemySpawnerPlugin,
+            UpgradePlugin,
+            VacuumPlugin,
         ))
         .run();
 }

@@ -8,8 +8,7 @@ pub struct PlayerPlugin;
 
 impl Plugin for PlayerPlugin {
     fn build(&self, app: &mut App) {
-        app.insert_resource(MovementSettings { speed: 5.0 })
-            .add_systems(Startup, (spawn_player, ))
+        app.add_systems(Startup, (spawn_player, ))
             .add_systems(Update, (
                 move_player,
                 check_health,
@@ -21,50 +20,6 @@ impl Plugin for PlayerPlugin {
     }
 }
 
-#[derive(Resource)]
-struct MovementSettings {
-    pub speed: f32,
-}
-
-/// Creates the vertices and the indices of a prism that spans the whole up/down axis
-/// and widens moving out from the origin
-fn create_vacuum_range() -> (Vec<Vect>, Vec<[u32; 3]>) {
-    let vertices = vec![
-        // right hand corners
-        Vect::new(0.5, 0.5, 1.0),
-        Vect::new(1.5, -1.0, 1.0),
-        Vect::new(1.5, -1.0, -1.0),
-        Vect::new(0.5, 0.5, -1.0),
-        // left hand corners
-        Vect::new(-0.5, 0.5, 1.0),
-        Vect::new(-1.5, -1.0, 1.0),
-        Vect::new(-1.5, -1.0, -1.0),
-        Vect::new(-0.5, 0.5, -1.0),
-        ];
-
-    let indices: Vec<[u32; 3]> = vec![
-        // right hand wall
-        [0, 1, 2],
-        [0, 2, 3],
-        // left hand wall
-        [4, 5, 6],
-        [4, 6, 7],
-        //front wall
-        [1, 5, 6],
-        [1, 6, 2],
-        // back wall
-        [0, 4, 7],
-        [0, 7, 3],
-        // top wall,
-        [3, 2, 6],
-        [3, 6, 7],
-        // bottom wall,
-        [0, 1, 5],
-        [0, 5, 4],
-        ];
-
-    (vertices, indices)
-}
 
 fn spawn_player(
     asset_server: Res<AssetServer>,
@@ -120,12 +75,11 @@ fn spawn_player(
 
 fn move_player(
     stats: Res<Stats>,
-    movement_settings: Res<MovementSettings>,
     input_values: Res<InputValues>,
     mut query: Query<(&mut Velocity, &mut Transform), With<Player>>,
 ) {
     for (mut velocity, mut transform) in &mut query {
-        velocity.linvel = Vec3::new(input_values.movement.x, 0.0, input_values.movement.y) * movement_settings.speed * stats.normalized_health();
+        velocity.linvel = Vec3::new(input_values.movement.x, 0.0, input_values.movement.y) * stats.movement_speed * stats.normalized_health();
         transform.look_at(input_values.mouse_position, Vec3::Y);
     }
 }
