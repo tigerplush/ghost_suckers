@@ -7,7 +7,10 @@ pub struct UiPlugin;
 impl Plugin for UiPlugin {
     fn build(&self, app: &mut App) {
         app.add_systems(Startup, setup)
-            .add_systems(Update, update_stats);
+            .add_systems(Update, (
+                update_stats,
+                update_entities,
+            ));
     }
 }
 
@@ -19,6 +22,9 @@ struct GhostText;
 
 #[derive(Component)]
 struct FrostOverlay;
+
+#[derive(Component)]
+struct EntityCounter;
 
 fn setup(
     asset_server: Res<AssetServer>,
@@ -90,6 +96,19 @@ fn setup(
         }
     )
     .insert(FrostOverlay);
+
+    commands.spawn(
+        TextBundle::from("From an &str into a TextBundle with the default font!")
+        .with_style(
+            Style {
+                position_type: PositionType::Absolute,
+                bottom: Val::Px(5.0),
+                left: Val::Px(15.0),
+                ..default()
+            },
+        ),
+    )
+    .insert(EntityCounter);
 }
 
 fn update_stats(
@@ -108,5 +127,15 @@ fn update_stats(
 
     for mut overlay in &mut overlays {
         overlay.0 = Color::rgba(1.0, 1.0, 1.0, 1.0 - stats.normalized_health()).into();
+    }
+}
+
+fn update_entities(
+    query: Query<Entity>,
+    mut counters: Query<&mut Text, With<EntityCounter>>,
+) {
+    let entities = query.iter().collect::<Vec<Entity>>().len();
+    for mut counter in &mut counters {
+        counter.sections[0].value = format!("Entities: {}", entities);
     }
 }
