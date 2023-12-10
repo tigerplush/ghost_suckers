@@ -69,7 +69,7 @@ impl Stats {
             health: 100.0,
             regeneration: 1.0,
             sucked_ghosts: 0,
-            suck_time: 1.0,
+            suck_time: 0.5,
             movement_speed: 5.0,
             reg_paused: false,
         }

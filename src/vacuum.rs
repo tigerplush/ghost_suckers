@@ -21,7 +21,7 @@ fn detect_suckage(
         match suck_event {
             SuckEvent::Start(entity) => {
                 if let Some(mut cmds) = commands.get_entity(*entity) {
-                    cmds.try_insert(SuckTimer(Timer::from_seconds(config.suck_time, TimerMode::Once)));
+                    cmds.insert(SuckTimer(Timer::from_seconds(config.suck_time, TimerMode::Once)));
                 }
             }
             SuckEvent::Stop(entity) => {

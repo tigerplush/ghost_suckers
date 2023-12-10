@@ -1,6 +1,7 @@
 use bevy::prelude::*;
+use bevy_rapier3d::prelude::*;
 
-use crate::{component::*, collision_events::CollideWithPlayer, events::{DamageEvent, Sucked}, common::Remap, resource::{CameraSettings, Stats}, enemy_spawner::GhostSpawnConfig};
+use crate::{component::*, collision_events::*, events::*, common::Remap, resource::*, enemy_spawner::GhostSpawnConfig};
 
 pub struct EnemyPlugin;
 
@@ -16,6 +17,7 @@ impl Plugin for EnemyPlugin {
             move_enemies,
             detect_collisions,
             detect_suck_events,
+            detect_suckage,
         ));
     }
 }
@@ -84,6 +86,31 @@ fn detect_suck_events(
             ghost_spawn_config.eliminate_ghost();
             commands.entity(ghost).despawn_recursive();
             camera_settings.add(CAMERA_SHAKE);
+        }
+    }
+}
+
+fn detect_suckage(
+    mut suck_events: EventReader<SuckEvent>,
+    query: Query<&Ghost>,
+    mut commands: Commands,
+) {
+    for suck_event in suck_events.read() {
+        match suck_event {
+            SuckEvent::Start(entity) => {
+                if query.contains(*entity) {
+                    if let Some(mut cmds) = commands.get_entity(*entity) {
+                        cmds.insert(CollisionGroups::new(Group::GROUP_2, Group::GROUP_3));
+                    }
+                }
+            }
+            SuckEvent::Stop(entity) => {
+                if query.contains(*entity) {
+                    if let Some(mut cmds) = commands.get_entity(*entity) {
+                        cmds.insert(CollisionGroups::new(Group::GROUP_2, Group::GROUP_1 | Group::GROUP_3));
+                    }
+                }
+            }
         }
     }
 }

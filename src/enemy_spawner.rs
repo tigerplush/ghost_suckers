@@ -10,7 +10,7 @@ use crate::{component::*, events::{WaveEnd, PickedUpgrade}};
 
 pub struct EnemySpawnerPlugin;
 
-const INITIAL_TIME_BETWEEN_GHOSTS: f32 = 1.0;
+const INITIAL_TIME_BETWEEN_GHOSTS: f32 = 0.8;
 
 impl Plugin for EnemySpawnerPlugin {
     fn build(&self, app: &mut App) {
@@ -18,9 +18,9 @@ impl Plugin for EnemySpawnerPlugin {
         .insert_resource(GhostSpawnConfig {
             timer: Timer::new(Duration::from_secs_f32(INITIAL_TIME_BETWEEN_GHOSTS), TimerMode::Repeating),
             current_time_between_ghosts: INITIAL_TIME_BETWEEN_GHOSTS,
-            damage: 10.0,
-            speed: 1.0,
-            wave_size: 10,
+            damage: 8.0,
+            speed: 2.0,
+            wave_size: 40,
             spawned_ghosts: 0,
             eliminated_ghosts: 0,
             current_wave: 1,
