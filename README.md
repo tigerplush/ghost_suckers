@@ -28,12 +28,12 @@ less slowing from damage
 
 # todo
 show what upgrades do (https://bevyengine.org/examples/3D%20Rendering/blend-modes/)
-don't regenerate health during upgrade picking
 
 # bugs
-sometimes ghosts don't grow when they leave the vacuum
+sometimes ghosts don't grow when they leave the vacuum (fixed?)
 
 # nice to have
+fade music
 spawn ghosts out of graves with a little intro animation
 floaty upgrades
 map-generation
