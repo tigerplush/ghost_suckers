@@ -1,4 +1,4 @@
-use bevy::{prelude::*, audio::VolumeLevel};
+use bevy::{prelude::*, audio::{VolumeLevel, PlaybackMode}};
 
 use crate::{resource::Stats, component::Ghost, enemy_spawner::GhostSpawnConfig, events::VacuumEvent};
 
@@ -28,6 +28,10 @@ fn setup(
 ) {
     commands.spawn(AudioBundle {
         source: asset_server.load("sounds/Basetrack.wav"),
+        settings: PlaybackSettings {
+            mode: PlaybackMode::Loop,
+            ..default()
+        },
         ..default()
     })
     .insert(BaseTrack);
@@ -36,6 +40,7 @@ fn setup(
         source: asset_server.load("sounds/Medium Track.wav"),
         settings: PlaybackSettings {
             volume: bevy::audio::Volume::Relative(VolumeLevel::new(0.0)),
+            mode: PlaybackMode::Loop,
             ..default()
         },
         ..default()

@@ -22,6 +22,7 @@ impl Plugin for EnemySpawnerPlugin {
             speed: 1.0,
             wave_size: 10,
             spawned_ghosts: 0,
+            eliminated_ghosts: 0,
             current_wave: 1,
         })
         .add_systems(Update, (
@@ -40,12 +41,17 @@ pub struct GhostSpawnConfig {
     speed: f32,
     wave_size: u32,
     spawned_ghosts: u32,
+    eliminated_ghosts: u32,
     current_wave: u32,
 }
 
 impl GhostSpawnConfig {
     pub fn wave_size(&self) -> u32 {
         self.wave_size
+    }
+
+    pub fn eliminate_ghost(&mut self) {
+        self.eliminated_ghosts += 1;
     }
 }
 
@@ -92,9 +98,9 @@ fn check_wave_end(
     mut config: ResMut<GhostSpawnConfig>,
     mut wave_end_events: EventWriter<WaveEnd>,
 ) {
-    if config.spawned_ghosts == config.wave_size {
+    if config.eliminated_ghosts == config.wave_size {
         wave_end_events.send(WaveEnd);
-        config.spawned_ghosts += 1;
+        config.eliminated_ghosts = 0;
     }
 }
 
