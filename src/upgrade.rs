@@ -65,35 +65,32 @@ impl Random for Upgrade {
 }
 
 fn spawn_update(
-    mut meshes: ResMut<Assets<Mesh>>,
-    mut materials: ResMut<Assets<StandardMaterial>>,
+    asset_server: Res<AssetServer>,
     mut wave_end_event: EventReader<WaveEnd>,
     mut commmands: Commands,
 ) {
     for _ in wave_end_event.read() {
-        commmands.spawn(PbrBundle {
-            mesh: meshes.add(shape::UVSphere::default().into()),
-            material: materials.add(StandardMaterial::default()),
+        commmands.spawn(SceneBundle {
+            scene: asset_server.load("dirtbag.glb#Scene0"),
             transform: Transform::from_xyz(-5.0, 0.0, 0.0),
             ..default()
         })
         .insert(Upgrade::random())
         .insert(FloatTimer::new())
-        .insert(Collider::ball(1.0))
+        .insert(Collider::ball(0.5))
         .insert(Sensor)
         .insert(CollisionGroups::new(Group::GROUP_5, Group::GROUP_3))
         .insert(ActiveEvents::COLLISION_EVENTS)
         .insert(Suckable);
 
-        commmands.spawn(PbrBundle {
-            mesh: meshes.add(shape::UVSphere::default().into()),
-            material: materials.add(StandardMaterial::default()),
+        commmands.spawn(SceneBundle {
+            scene: asset_server.load("dirtbag.glb#Scene0"),
             transform: Transform::from_xyz(5.0, 0.0, 0.0),
             ..default()
         })
         .insert(Upgrade::random())
         .insert(FloatTimer::new())
-        .insert(Collider::ball(1.0))
+        .insert(Collider::ball(0.5))
         .insert(Sensor)
         .insert(CollisionGroups::new(Group::GROUP_5, Group::GROUP_3))
         .insert(ActiveEvents::COLLISION_EVENTS)

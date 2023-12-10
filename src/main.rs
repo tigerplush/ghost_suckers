@@ -1,5 +1,5 @@
 use bevy::prelude::*;
-use bevy_inspector_egui::quick::WorldInspectorPlugin;
+//use bevy_inspector_egui::quick::WorldInspectorPlugin;
 use bevy_rapier3d::prelude::*;
 use bevy_rand::prelude::*;
 use bevy_prng::ChaCha8Rng;
@@ -46,9 +46,9 @@ fn main() {
         .insert_resource(Stats::new())
         .add_plugins((
             DefaultPlugins,
-            WorldInspectorPlugin::new(),
+            //WorldInspectorPlugin::new(),
             RapierPhysicsPlugin::<NoUserData>::default(),
-            RapierDebugRenderPlugin::default(),
+            //RapierDebugRenderPlugin::default(),
             EntropyPlugin::<ChaCha8Rng>::default(),
             HookPlugin,
         ))

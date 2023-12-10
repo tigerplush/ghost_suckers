@@ -1,6 +1,6 @@
 use bevy::{prelude::*, audio::{VolumeLevel, PlaybackMode}};
 
-use crate::{resource::Stats, component::Ghost, enemy_spawner::GhostSpawnConfig, events::VacuumEvent};
+use crate::{resource::Stats, component::Ghost, enemy_spawner::GhostSpawnConfig, events::{VacuumEvent, WaveEnd, PickedUpgrade, Sucked}};
 
 pub struct SoundPlugin;
 
@@ -13,6 +13,9 @@ impl Plugin for SoundPlugin {
                 start_stop_vacuum,
                 apply_danger_level,
                 check_vacuum_sound,
+                check_wave_end,
+                play_upgrade_sound,
+                suck_ghosts,
             ));
     }
 }
@@ -183,5 +186,60 @@ fn check_vacuum_sound(
             ..default()
         })
         .insert(VacuumSound);
+    }
+}
+
+fn check_wave_end(
+    asset_server: Res<AssetServer>,
+    mut wave_end_event: EventReader<WaveEnd>,
+    mut commands: Commands,
+) {
+    for _ in wave_end_event.read() {
+
+        commands.spawn(AudioBundle {
+            source: asset_server.load("sounds/upgrade_sound.wav"),
+            settings: PlaybackSettings {
+                mode: bevy::audio::PlaybackMode::Despawn,
+                volume: vacuum_volume(),
+                ..default()
+            },
+            ..default()
+        });
+    }
+}
+
+fn play_upgrade_sound(
+    asset_server: Res<AssetServer>,
+    mut events: EventReader<PickedUpgrade>,
+    mut commands: Commands,
+) {
+    for _ in events.read() {
+        commands.spawn(AudioBundle {
+            source: asset_server.load("sounds/blop.wav"),
+            settings: PlaybackSettings {
+                mode: bevy::audio::PlaybackMode::Despawn,
+                volume: vacuum_volume(),
+                ..default()
+            },
+            ..default()
+        });
+    }
+}
+
+fn suck_ghosts(
+    asset_server: Res<AssetServer>,
+    mut events: EventReader<Sucked>,
+    mut commands: Commands,
+) {
+    for _ in events.read() {
+        commands.spawn(AudioBundle {
+            source: asset_server.load("sounds/suck_pop.wav"),
+            settings: PlaybackSettings {
+                mode: bevy::audio::PlaybackMode::Despawn,
+                volume: vacuum_volume(),
+                ..default()
+            },
+            ..default()
+        });
     }
 }

@@ -44,11 +44,13 @@ fn update_suckage(
     mut query: Query<(&mut SuckTimer, &mut Transform, Entity), Without<Nozzle>>,
     nozzles: Query<&GlobalTransform, With<Nozzle>>,
 ) {
+    let Ok(nozzle) = nozzles.get_single() else {
+        return;
+    };
     for (mut timer, mut transform, entity) in &mut query {
         timer.tick(time.delta());
         transform.scale = Vec3::ONE * timer.percent_left();
         transform.rotation = Quat::random();
-        let nozzle = nozzles.single();
         let diff = nozzle.translation() - transform.translation;
         let direction = diff.normalize_or_zero() * time.delta_seconds() * SUCKING_SPEED;
         transform.translation += direction;
