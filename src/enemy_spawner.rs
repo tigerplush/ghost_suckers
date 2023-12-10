@@ -33,7 +33,7 @@ impl Plugin for EnemySpawnerPlugin {
 }
 
 #[derive(Resource)]
-struct GhostSpawnConfig {
+pub struct GhostSpawnConfig {
     timer: Timer,
     current_time_between_ghosts: f32,
     damage: f32,
@@ -41,6 +41,12 @@ struct GhostSpawnConfig {
     wave_size: u32,
     spawned_ghosts: u32,
     current_wave: u32,
+}
+
+impl GhostSpawnConfig {
+    pub fn wave_size(&self) -> u32 {
+        self.wave_size
+    }
 }
 
 fn spawn_enemy(

@@ -9,7 +9,7 @@ edition = "2021"
 opt-level = 1
 
 [dependencies]
-bevy = "0.12.1"
+bevy = { version = "0.12.1", features = [ "wav" ] }
 bevy-inspector-egui = "0.21.0"
 bevy-scene-hook = "9.0.0"
 bevy_hanabi = "0.8.0"

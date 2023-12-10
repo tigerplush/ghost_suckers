@@ -13,6 +13,7 @@ use input::InputPlugin;
 use map_generation::MapGeneratorPlugin;
 use player::PlayerPlugin;
 use resource::*;
+use sound::SoundPlugin;
 use ui::UiPlugin;
 use upgrade::UpgradePlugin;
 use vacuum::VacuumPlugin;
@@ -28,6 +29,7 @@ mod input;
 mod map_generation;
 mod player;
 mod resource;
+mod sound;
 mod ui;
 mod upgrade;
 mod vacuum;
@@ -61,6 +63,7 @@ fn main() {
             EnemySpawnerPlugin,
             UpgradePlugin,
             VacuumPlugin,
+            SoundPlugin,
         ))
         .run();
 }
