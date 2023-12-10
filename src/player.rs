@@ -2,7 +2,7 @@ use bevy::prelude::*;
 use bevy_rapier3d::{prelude::*, rapier::geometry::ColliderShape};
 use bevy_scene_hook::{SceneHook, HookedSceneBundle};
 
-use crate::{resource::{InputValues, Stats}, component::{Player, Nozzle}, events::{DamageEvent, VacuumEvent}, common::{Random, point_in_circle}};
+use crate::{resource::{InputValues, Stats}, component::{Player, Nozzle}, events::{DamageEvent, VacuumEvent, WaveEnd, PickedUpgrade}, common::{Random, point_in_circle}};
 
 pub struct PlayerPlugin;
 
@@ -16,10 +16,10 @@ impl Plugin for PlayerPlugin {
                 read_damage,
                 spawn_vacuum_effect,
                 move_vacuum_effect,
+                handle_between_waves,
             ));
     }
 }
-
 
 fn spawn_player(
     asset_server: Res<AssetServer>,
@@ -168,7 +168,9 @@ fn check_health(
     query: Query<Entity, With<Player>>,
     mut commands: Commands,
 ) {
-    stats.regenerate(time.delta_seconds());
+    if !stats.reg_paused {
+        stats.regenerate(time.delta_seconds());
+    }
     if stats.health <= 0.0 {
         for player in &query {
             commands.entity(player).despawn_recursive();
@@ -182,5 +184,19 @@ fn read_damage(
 ) {
     for damage_event in damage_events.read() {
         stats.health -= damage_event.0;
+    }
+}
+
+fn handle_between_waves(
+    mut stats: ResMut<Stats>,
+    mut wave_end_events: EventReader<WaveEnd>,
+    mut picked_upgrade_events: EventReader<PickedUpgrade>,
+) {
+    if !stats.reg_paused && !wave_end_events.is_empty() {
+        stats.reg_paused = true;
+    }
+
+    if stats.reg_paused && !picked_upgrade_events.is_empty() {
+        stats.reg_paused = false;
     }
 }

@@ -59,6 +59,7 @@ pub struct Stats {
     pub sucked_ghosts: u32,
     pub suck_time: f32,
     pub movement_speed: f32,
+    pub reg_paused: bool,
 }
 
 impl Stats {
@@ -70,6 +71,7 @@ impl Stats {
             sucked_ghosts: 0,
             suck_time: 1.0,
             movement_speed: 5.0,
+            reg_paused: false,
         }
     }
 
