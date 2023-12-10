@@ -1,4 +1,4 @@
-use bevy::prelude::*;
+use bevy::{prelude::*, asset::AssetMetaCheck, window::PresentMode};
 //use bevy_inspector_egui::quick::WorldInspectorPlugin;
 use bevy_rapier3d::prelude::*;
 use bevy_rand::prelude::*;
@@ -36,6 +36,7 @@ mod vacuum;
 
 fn main() {
     App::new()
+        .insert_resource(AssetMetaCheck::Never)
         .insert_resource(InputValues::new())
         .insert_resource(CameraSettings {
             offset: Vec3 { x: 0.0, y: 10.0, z: 10.0 },
@@ -45,7 +46,17 @@ fn main() {
         })
         .insert_resource(Stats::new())
         .add_plugins((
-            DefaultPlugins,
+            DefaultPlugins.set(WindowPlugin {
+                primary_window: Some(Window {
+                    title: "Ghost Suckers!".into(),
+                    resolution: (1024.0, 576.0).into(),
+                    present_mode: PresentMode::AutoVsync,
+                    fit_canvas_to_parent: true,
+                    prevent_default_event_handling: false,
+                    ..default()
+                }),
+                ..default()
+            }),
             //WorldInspectorPlugin::new(),
             RapierPhysicsPlugin::<NoUserData>::default(),
             //RapierDebugRenderPlugin::default(),

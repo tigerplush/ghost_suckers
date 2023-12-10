@@ -28,6 +28,7 @@ less slowing from damage
 
 # todo
 show what upgrades do (https://bevyengine.org/examples/3D%20Rendering/blend-modes/)
+fix sound https://github.com/rparrett/bevy_pipelines_ready
 
 # bugs
 sometimes ghosts don't grow when they leave the vacuum (fixed?)
