@@ -53,25 +53,28 @@ fn setup(
     )
     .insert(HealthText);
 
-    commands.spawn((
-        TextBundle::from_section(
-            "hello\nbevy!",
+    commands.spawn(NodeBundle {
+        style: Style {
+            width: Val::Percent(100.0),
+            height: Val::Percent(100.0),
+            justify_content: JustifyContent::Center,
+            position_type: PositionType::Absolute,
+            ..default()
+        },
+        ..default()
+    })
+    .with_children(|parent| {
+        parent.spawn(TextBundle::from_section(
+            "fartbag",
             TextStyle {
                 font: asset_server.load("graveyrd.ttf"),
                 font_size: 100.0,
                 ..default()
-            },
-        ) // Set the alignment of the Text
-        .with_text_alignment(TextAlignment::Center)
-        // Set the style of the TextBundle itself.
-        .with_style(Style {
-            position_type: PositionType::Absolute,
-            bottom: Val::Px(5.0),
-            right: Val::Px(5.0),
-            ..default()
-        }),
-        GhostText,
-    ));
+            })
+            .with_text_alignment(TextAlignment::Center)
+        )
+        .insert(GhostText);
+    });
 
     commands.spawn(
         ImageBundle {
@@ -100,7 +103,7 @@ fn update_stats(
     }
 
     for mut text in &mut ghosts {
-        text.sections[0].value = format!("{}", stats.sucked_ghosts);
+        text.sections[0].value = format!("- {} -", stats.sucked_ghosts);
     }
 
     for mut overlay in &mut overlays {

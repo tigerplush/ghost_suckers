@@ -1,6 +1,6 @@
 use bevy::prelude::*;
 
-use crate::{component::*, collision_events::CollideWithPlayer, events::{DamageEvent, Sucked}, common::Remap, resource::CameraSettings, enemy_spawner::GhostSpawnConfig};
+use crate::{component::*, collision_events::CollideWithPlayer, events::{DamageEvent, Sucked}, common::Remap, resource::{CameraSettings, Stats}, enemy_spawner::GhostSpawnConfig};
 
 pub struct EnemyPlugin;
 
@@ -71,6 +71,7 @@ fn detect_collisions(
 const CAMERA_SHAKE: f32 = 0.1;
 
 fn detect_suck_events(
+    mut stats: ResMut<Stats>,
     mut ghost_spawn_config: ResMut<GhostSpawnConfig>,
     mut camera_settings: ResMut<CameraSettings>,
     mut events: EventReader<Sucked>,
@@ -79,6 +80,7 @@ fn detect_suck_events(
 ) {
     for event in events.read() {
         if let Ok(ghost) = query.get(event.0) {
+            stats.sucked_ghosts += 1;
             ghost_spawn_config.eliminate_ghost();
             commands.entity(ghost).despawn_recursive();
             camera_settings.add(CAMERA_SHAKE);
