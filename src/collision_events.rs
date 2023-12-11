@@ -33,11 +33,11 @@ fn handle_collisions(
     for collision_event in collision_events.read() {
         if let CollisionEvent::Started(left, right, _) = collision_event {
             if let Some(suckable) = suckables.iter().find(|ghost| ghost == left || ghost == right) {
-                if players.iter().any(|p| p == *left || p == *right) {
-                    player_collision.send(CollideWithPlayer(suckable));
-                }
                 if nozzles.iter().any(|n| n == *left || n == *right) {
                     suck_events.send(SuckEvent::Start(suckable));
+                }
+                else if players.iter().any(|p| p == *left || p == *right) {
+                    player_collision.send(CollideWithPlayer(suckable));
                 }
             }
         }

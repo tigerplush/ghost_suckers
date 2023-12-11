@@ -49,6 +49,7 @@ fn move_enemies(
         }
         transform.translation += direction;
         transform.translation.y = height;
+        transform.scale = Vec3::ONE;
     }
 }
 
