@@ -63,6 +63,10 @@ impl GhostSpawnConfig {
     pub fn eliminate_ghost(&mut self) {
         self.eliminated_ghosts += 1;
     }
+
+    pub fn current_wave(&self) -> u32 {
+        self.current_wave
+    }
 }
 
 fn spawn_enemy(

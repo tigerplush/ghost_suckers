@@ -64,8 +64,8 @@ fn detect_collisions(
             if let Ok(damage) = damages.get(collision_event.0) {
                 damage_events.send(DamageEvent(damage.0));
                 ghost_spawn_config.eliminate_ghost();
+                entity.despawn_recursive();
             }
-            entity.despawn_recursive();
         }
     }
 }

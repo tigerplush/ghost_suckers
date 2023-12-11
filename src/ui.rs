@@ -1,6 +1,6 @@
 use bevy::prelude::*;
 
-use crate::{resource::Stats, GameState};
+use crate::{resource::Stats, GameState, enemy_spawner::GhostSpawnConfig};
 
 pub struct UiPlugin;
 
@@ -31,6 +31,9 @@ struct FrostOverlay;
 
 #[derive(Component)]
 struct EntityCounter;
+
+#[derive(Component)]
+struct WaveCounter;
 
 fn setup(
     asset_server: Res<AssetServer>,
@@ -115,12 +118,33 @@ fn setup(
         ),
     )
     .insert(EntityCounter);
+
+    commands.spawn(
+        TextBundle::from_section(
+            "fartbag",
+            TextStyle {
+                font: asset_server.load("graveyrd.ttf"),
+                font_size: 50.0,
+                ..default()
+            })
+        .with_style(
+            Style {
+                position_type: PositionType::Absolute,
+                top: Val::Px(5.0),
+                right: Val::Px(15.0),
+                ..default()
+            },
+        ),
+    )
+    .insert(WaveCounter);
 }
 
 fn update_stats(
     stats: Res<Stats>,
-    mut health: Query<&mut Text, (With<HealthText>, Without<GhostText>)>,
-    mut ghosts: Query<&mut Text, (With<GhostText>, Without<HealthText>)>,
+    ghost_config: Res<GhostSpawnConfig>,
+    mut health: Query<&mut Text, (With<HealthText>, Without<GhostText>, Without<WaveCounter>)>,
+    mut ghosts: Query<&mut Text, (With<GhostText>, Without<HealthText>, Without<WaveCounter>)>,
+    mut waves: Query<&mut Text, (With<WaveCounter>, Without<HealthText>, Without<GhostText>)>,
     mut overlays: Query<&mut BackgroundColor, With<FrostOverlay>>,
 ) {
     for mut text in &mut health {
@@ -129,6 +153,10 @@ fn update_stats(
 
     for mut text in &mut ghosts {
         text.sections[0].value = format!("- {} -", stats.sucked_ghosts);
+    }
+
+    for mut text in &mut waves {
+        text.sections[0].value = format!("Wave: {}", ghost_config.current_wave());
     }
 
     for mut overlay in &mut overlays {

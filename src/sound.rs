@@ -19,7 +19,8 @@ impl Plugin for SoundPlugin {
                 play_upgrade_sound,
                 suck_ghosts,
                 hurt,
-            ).run_if(in_state(GameState::Game)));
+            ).run_if(in_state(GameState::Game)))
+            .add_systems(OnExit(GameState::Game), kill_all_sound);
     }
 }
 
@@ -286,5 +287,14 @@ fn hurt(
             },
             ..default()
         });
+    }
+}
+
+fn kill_all_sound(
+    query: Query<Entity, With<AudioSink>>,
+    mut commands: Commands,
+) {
+    for sink in &query {
+        commands.entity(sink).despawn_recursive();
     }
 }
