@@ -1,55 +1,55 @@
 use bevy::prelude::*;
 use bevy_rapier3d::prelude::*;
 
-use crate::{component::*, collision_events::*, events::*, common::Remap, resource::*, enemy_spawner::GhostSpawnConfig, GameState};
+use crate::{component::*, collision_events::*, events::*, resource::*, enemy_spawner::GhostSpawnConfig, GameState};
 
 pub struct EnemyPlugin;
 
 impl Plugin for EnemyPlugin {
     fn build(&self, app: &mut App) {
         app
-        .insert_resource(GhostConfig {
-            height_offset: 1.0,
-            height_map: (-0.5, 0.5),
-        })
         .add_event::<DamageEvent>()
         .add_systems(Update, (
             move_enemies,
             detect_collisions,
             detect_suck_events,
             detect_suckage,
-        ).run_if(in_state(GameState::Game)));
+        ).run_if(in_state(GameState::Game)))
+        .add_systems(Update, float_entites);
     }
 }
 
-#[derive(Resource)]
-struct GhostConfig {
-    height_offset: f32,
-    height_map: (f32, f32),
-}
 
 fn move_enemies(
     time: Res<Time>,
-    config: Res<GhostConfig>,
     player_query: Query<&Transform, (With<Player>, Without<Ghost>)>,
-    mut query: Query<(&mut Transform, &mut FloatTimer, &Ghost), Without<SuckTimer>>,
+    mut query: Query<(&mut Transform, &Ghost), Without<SuckTimer>>,
 ) {
-    for (mut transform, mut timer, ghost) in &mut query {
-        timer.tick(time.delta());
-        let height = timer.elapsed_secs().sin().remap((-1.0, 1.0), config.height_map) + config.height_offset;
+    for (mut transform, ghost) in &mut query {
 
         let mut direction = Vec3::ZERO;
         if let Ok(player) = player_query.get_single() {
             let mut vantage = player.translation;
-            vantage.y = height;
+            vantage.y = transform.translation.y;
             transform.look_at(vantage, Vec3::Y);
             let mut diff = player.translation - transform.translation;
             diff.y = 0.0;
             direction = diff.normalize_or_zero() * time.delta_seconds() * ghost.0;
         }
+        direction.y = 0.0;
         transform.translation += direction;
-        transform.translation.y = height;
         transform.scale = Vec3::ONE;
+    }
+}
+
+fn float_entites(
+    time: Res<Time>,
+    mut query: Query<(&mut Transform, &mut FloatTimer), Without<SuckTimer>>
+) {
+    for (mut transform, mut timer) in &mut query {
+        timer.tick(time.delta());
+        let height = timer.height();
+        transform.translation.y = height;
     }
 }
 

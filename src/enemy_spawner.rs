@@ -49,7 +49,8 @@ impl GhostSpawnConfig {
             current_time_between_ghosts: INITIAL_TIME_BETWEEN_GHOSTS,
             damage: 8.0,
             speed: 2.0,
-            wave_size: 40,
+            //wave_size: 40,
+            wave_size: 10,
             spawned_ghosts: 0,
             eliminated_ghosts: 0,
             current_wave: 1,
@@ -100,7 +101,7 @@ fn spawn_enemy(
         .insert(Sensor)
         .insert(CollisionGroups::new(Group::GROUP_2, Group::GROUP_1 | Group::GROUP_3))
         .insert(ActiveEvents::COLLISION_EVENTS)
-        .insert(FloatTimer::new())
+        .insert(FloatTimer::new((0.5, 1.5)))
         .insert(Damage(config.damage))
         .insert(Suckable);
 

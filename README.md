@@ -27,11 +27,12 @@ more range width
 less slowing from damage
 
 # todo
-show what upgrades do (https://bevyengine.org/examples/3D%20Rendering/blend-modes/)
 fix sound https://github.com/rparrett/bevy_pipelines_ready
 
 # bugs
-sometimes ghosts don't grow when they leave the vacuum (fixed?)
+sometimes vacuum sound cuts out
+sometimes you can suck more ghosts than the wave has
+two upgrades of the same type can spawn
 
 # nice to have
 fade music

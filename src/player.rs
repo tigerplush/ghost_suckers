@@ -12,7 +12,7 @@ impl Plugin for PlayerPlugin {
             .add_systems(OnEnter(GameState::Game), (spawn_player, reset_stats))
             .add_systems(Update, (
                 move_player,
-                check_health,
+                regenerate_health,
                 handle_vacuum,
                 read_damage,
                 spawn_vacuum_effect,
@@ -169,31 +169,32 @@ fn move_vacuum_effect(
     }
 }
 
-fn check_health(
+fn regenerate_health(
     time: Res<Time>,
     mut stats: ResMut<Stats>,
-    mut game_state: ResMut<NextState<GameState>>,
-    query: Query<Entity, With<Player>>,
-    mut commands: Commands,
 ) {
     if !stats.reg_paused {
         stats.regenerate(time.delta_seconds());
-    }
-    if stats.health <= 0.0 {
-        stats.reg_paused = true;
-        for player in &query {
-            commands.entity(player).despawn_recursive();
-        }
-        game_state.set(GameState::GameOver);
     }
 }
 
 fn read_damage(
     mut stats: ResMut<Stats>,
-    mut damage_events: EventReader<DamageEvent>
+    mut damage_events: EventReader<DamageEvent>,
+    mut game_state: ResMut<NextState<GameState>>,
+    query: Query<Entity, With<Player>>,
+    mut commands: Commands,
 ) {
     for damage_event in damage_events.read() {
         stats.health -= damage_event.0;
+        if stats.health <= 0.0 {
+            stats.reg_paused = true;
+            for player in &query {
+                commands.entity(player).despawn_recursive();
+            }
+            stats.health = 0.0;
+            game_state.set(GameState::GameOver);
+        }
     }
 }
 
