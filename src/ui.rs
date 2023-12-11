@@ -14,6 +14,7 @@ impl Plugin for UiPlugin {
                 update_stats,
                 update_entities,
             ).run_if(in_state(GameState::Game)))
+            .add_systems(OnExit(GameState::Game), (update_stats, update_entities))
             .add_systems(OnEnter(GameState::GameOver), spawn_restart_button)
             .add_systems(Update, button_system.run_if(in_state(GameState::GameOver)))
             .add_systems(OnExit(GameState::GameOver), cleanup_restart_button);

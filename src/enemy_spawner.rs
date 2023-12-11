@@ -15,11 +15,11 @@ const INITIAL_TIME_BETWEEN_GHOSTS: f32 = 0.8;
 impl Plugin for EnemySpawnerPlugin {
     fn build(&self, app: &mut App) {
         app.add_event::<WaveEnd>()
-        .add_systems(OnEnter(GameState::Game), reset_config)
+        .add_systems(OnEnter(GameState::Game), (reset_config, kill_all_ghosts))
         .add_systems(Update, (
             spawn_enemy,
             check_wave_end,
-            check_picked_upgrade,
+            reset_wave,
         ).run_if(in_state(GameState::Game)));
     }
 }
@@ -28,6 +28,15 @@ fn reset_config(
     mut commands: Commands,
 ) {
     commands.insert_resource(GhostSpawnConfig::new());
+}
+
+fn kill_all_ghosts(
+    ghosts: Query<Entity, With<Ghost>>,
+    mut commands: Commands,
+) {
+    for ghost in &ghosts {
+        commands.entity(ghost).despawn_recursive();
+    }
 }
 
 #[derive(Resource)]
@@ -89,7 +98,7 @@ fn spawn_enemy(
             pos.x = angle.sin() * radius + player.translation.x;
             pos.z = angle.cos() * radius + player.translation.z;
         }
-        commands.spawn(SceneBundle {
+        let id = commands.spawn(SceneBundle {
             scene: asset_server.load("ghost.glb#Scene0"),
             transform: Transform::from_translation(pos),
             ..default()
@@ -103,7 +112,9 @@ fn spawn_enemy(
         .insert(ActiveEvents::COLLISION_EVENTS)
         .insert(FloatTimer::new((0.5, 1.5)))
         .insert(Damage(config.damage))
-        .insert(Suckable);
+        .insert(Suckable).id();
+
+        info!("spawned {:?}", id);
 
         config.spawned_ghosts += 1;
     }
@@ -114,16 +125,18 @@ fn check_wave_end(
     mut wave_end_events: EventWriter<WaveEnd>,
 ) {
     if config.eliminated_ghosts == config.wave_size {
+        info!("wave {} ended", config.current_wave);
         wave_end_events.send(WaveEnd);
         config.eliminated_ghosts = 0;
     }
 }
 
-fn check_picked_upgrade(
+fn reset_wave(
     mut config: ResMut<GhostSpawnConfig>,
     mut picked_upgrade_events: EventReader<PickedUpgrade>,
 ) {
     for _ in picked_upgrade_events.read() {
+        info!("resetting wave {}", config.current_wave);
         config.wave_size = (config.wave_size as f32 * 1.1) as u32;
         config.spawned_ghosts = 0;
         config.damage *= 1.1;

@@ -1,6 +1,6 @@
 use bevy::prelude::*;
 use bevy_rapier3d::prelude::*;
-use rand::Rng;
+use rand::{Rng, thread_rng};
 
 use crate::{events::{WaveEnd, Sucked, PickedUpgrade}, component::{FloatTimer, Suckable}, resource::{CameraSettings, Stats}, GameState};
 
@@ -26,6 +26,7 @@ struct Upgrade {
     regeneration: f32,
     suck_time: f32,
     movement_speed: f32,
+    label: String,
 }
 
 impl Default for Upgrade {
@@ -36,6 +37,7 @@ impl Default for Upgrade {
             regeneration: 1.0,
             suck_time: 1.0,
             movement_speed: 1.0,
+            label: String::new(),
         }
     }
 }
@@ -55,27 +57,49 @@ impl Upgrade {
 }
 
 impl Upgrade {
-    fn random() -> (Self, String) {
-        let mut rng = rand::thread_rng();
-        let mut values = vec![0.0; 5];
-        let random_index = rng.gen_range(0..values.len());
-        values[random_index] = 0.1;
-        let strings = vec![
-            "Increases maximum health by 10%".to_string(),
-            "Heals 20% of your maximum health".to_string(),
-            "Increases health regeneration by 10%".to_string(),
-            "Decreases time to vacuum ghosts by 10%".to_string(),
-            "Increases movement speed by 10%".to_string()
-        ];
-        (Self {
-            max_health: 1.0 + values[0],
-            health: 2.0 * values[1],
-            regeneration: 1.0 + values[2],
-            suck_time: 1.0 - values[3],
-            movement_speed: 1.0 + values[4],
-        },
-        strings[random_index].clone()
-        )
+    fn all() -> Vec<Self> {
+        vec![
+            Self {
+                max_health: 1.1,
+                health: 0.0,
+                regeneration: 1.0,
+                suck_time: 1.0,
+                movement_speed: 1.0,
+                label: String::from("Increases maximum health by 10%"),
+            },
+            Self {
+                max_health: 1.0,
+                health: 0.2,
+                regeneration: 1.0,
+                suck_time: 1.0,
+                movement_speed: 1.0,
+                label: String::from("Heals 20% of your maximum health"),
+            },
+            Self {
+                max_health: 1.0,
+                health: 0.0,
+                regeneration: 1.1,
+                suck_time: 1.0,
+                movement_speed: 1.0,
+                label: String::from("Increases health regeneration by 10%"),
+            },
+            Self {
+                max_health: 1.0,
+                health: 0.0,
+                regeneration: 1.0,
+                suck_time: 0.9,
+                movement_speed: 1.0,
+                label: String::from("Decreases time to vacuum ghosts by 10%"),
+            },
+            Self {
+                max_health: 1.0,
+                health: 0.0,
+                regeneration: 1.0,
+                suck_time: 1.0,
+                movement_speed: 1.1,
+                label: String::from("Increases movement speed by 10%"),
+            },
+        ]
     }
 }
 
@@ -88,13 +112,18 @@ fn spawn_update(
     mut commands: Commands,
 ) {
     for _ in wave_end_event.read() {
+        info!("spawning upgrades");
+        let mut upgrades = Upgrade::all();
+
         let label_text_style = TextStyle {
             font: asset_server.load("graveyrd.ttf"),
             font_size: 25.0,
             color: Color::ORANGE,
         };
 
-        let (upgrade_left, label_left) = Upgrade::random();
+        let random_index = thread_rng().gen_range(0..upgrades.len());
+        let upgrade_left = upgrades.remove(random_index);
+        let label_left = upgrade_left.label.clone();
         let entity_left = commands.spawn(SceneBundle {
             scene: asset_server.load("dirtbag.glb#Scene0"),
             transform: Transform::from_xyz(-5.0, 0.0, 0.0),
@@ -108,6 +137,8 @@ fn spawn_update(
         .insert(ActiveEvents::COLLISION_EVENTS)
         .insert(Suckable)
         .id();
+
+        info!("spawned {:?}", entity_left);
 
         commands
         .spawn((
@@ -133,7 +164,9 @@ fn spawn_update(
             );
         });
 
-        let (upgrade_right, label_right) = Upgrade::random();
+        let random_index = thread_rng().gen_range(0..upgrades.len());
+        let upgrade_right = upgrades.remove(random_index);
+        let label_right = upgrade_right.label.clone();
         let entity_right = commands.spawn(SceneBundle {
             scene: asset_server.load("dirtbag.glb#Scene0"),
             transform: Transform::from_xyz(5.0, 0.0, 0.0),
@@ -147,6 +180,8 @@ fn spawn_update(
         .insert(ActiveEvents::COLLISION_EVENTS)
         .insert(Suckable)
         .id();
+
+        info!("spawned {:?}", entity_left);
 
         commands
         .spawn((
@@ -187,7 +222,6 @@ fn detect_suck_events(
     for event in events.read() {
         if let Ok((entity, upgrade)) = query.get(event.0) {
             upgrade.apply(&mut stats);
-            println!("{:?}", stats);
             commands.entity(entity).despawn_recursive();
             camera_settings.add(CAMERA_SHAKE);
             picked_upgrade_event.send(PickedUpgrade);
@@ -204,6 +238,7 @@ fn remove_all_upgrades(
     mut commands: Commands,
 ) {
     for _ in events.read() {
+        info!("removing upgrades and their labels");
         for entity in &dirtbags {
             if let Some(upgrade) = commands.get_entity(entity) {
                 upgrade.despawn_recursive();

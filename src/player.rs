@@ -200,14 +200,14 @@ fn read_damage(
 
 fn handle_between_waves(
     mut stats: ResMut<Stats>,
-    wave_end_events: EventReader<WaveEnd>,
-    picked_upgrade_events: EventReader<PickedUpgrade>,
+    mut wave_end_events: EventReader<WaveEnd>,
+    mut picked_upgrade_events: EventReader<PickedUpgrade>,
 ) {
-    if !stats.reg_paused && !wave_end_events.is_empty() {
+    for _ in wave_end_events.read() {
         stats.reg_paused = true;
     }
 
-    if stats.reg_paused && !picked_upgrade_events.is_empty() {
+    for _ in picked_upgrade_events.read() {
         stats.reg_paused = false;
     }
 }

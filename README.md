@@ -30,14 +30,11 @@ less slowing from damage
 fix sound https://github.com/rparrett/bevy_pipelines_ready
 
 # bugs
-sometimes vacuum sound cuts out
-sometimes you can suck more ghosts than the wave has
-two upgrades of the same type can spawn
+sometimes vacuum sound cuts out (fixed?)
 
 # nice to have
 fade music
 spawn ghosts out of graves with a little intro animation
-floaty upgrades
 map-generation
 reload time
 rotational camera shake

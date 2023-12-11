@@ -20,7 +20,7 @@ impl Plugin for SoundPlugin {
                 suck_ghosts,
                 hurt,
             ).run_if(in_state(GameState::Game)))
-            .add_systems(OnExit(GameState::Game), kill_all_sound);
+            .add_systems(OnEnter(GameState::GameOver), kill_all_sound);
     }
 }
 

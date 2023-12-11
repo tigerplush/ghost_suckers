@@ -20,11 +20,13 @@ fn detect_suckage(
     for suck_event in suck_events.read() {
         match suck_event {
             SuckEvent::Start(entity) => {
+                info!("Started vacuuming {:?}", entity);
                 if let Some(mut cmds) = commands.get_entity(*entity) {
                     cmds.try_insert(SuckTimer(Timer::from_seconds(config.suck_time, TimerMode::Once)));
                 }
             }
             SuckEvent::Stop(entity) => {
+                info!("Stopped vacuuming {:?}", entity);
                 if let Some(mut cmds) = commands.get_entity(*entity) {
                     cmds.remove::<SuckTimer>();
                     if let Ok(mut suckable) = query.get_mut(*entity) {
@@ -54,7 +56,8 @@ fn update_suckage(
         let diff = nozzle.translation() - transform.translation;
         let direction = diff.normalize_or_zero() * time.delta_seconds() * SUCKING_SPEED;
         transform.translation += direction;
-        if timer.finished() {
+        if timer.just_finished() {
+            info!("Sending sucked event for {:?}", entity);
             suck_events.send(Sucked(entity));
         }
     }

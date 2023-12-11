@@ -61,6 +61,7 @@ fn detect_collisions(
     mut commands: Commands,
 ) {
     for collision_event in collision_events.read() {
+        info!("Handling colision with player for {:?}", collision_event.0);
         if let Some(entity) = commands.get_entity(collision_event.0) {
             if let Ok(damage) = damages.get(collision_event.0) {
                 damage_events.send(DamageEvent(damage.0));
@@ -82,6 +83,7 @@ fn detect_suck_events(
     mut commands: Commands,
 ) {
     for event in events.read() {
+        info!("Handling vacuuming of {:?}", event.0);
         if let Ok(ghost) = query.get(event.0) {
             stats.sucked_ghosts += 1;
             ghost_spawn_config.eliminate_ghost();
@@ -99,6 +101,7 @@ fn detect_suckage(
     for suck_event in suck_events.read() {
         match suck_event {
             SuckEvent::Start(entity) => {
+                info!("Started vacuuming {:?}", entity);
                 if query.contains(*entity) {
                     if let Some(mut cmds) = commands.get_entity(*entity) {
                         cmds.insert(CollisionGroups::new(Group::GROUP_2, Group::GROUP_3));
@@ -106,6 +109,7 @@ fn detect_suckage(
                 }
             }
             SuckEvent::Stop(entity) => {
+                info!("Stopped vacuuming {:?}", entity);
                 if query.contains(*entity) {
                     if let Some(mut cmds) = commands.get_entity(*entity) {
                         cmds.insert(CollisionGroups::new(Group::GROUP_2, Group::GROUP_1 | Group::GROUP_3));
