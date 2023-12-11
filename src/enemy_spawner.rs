@@ -58,8 +58,7 @@ impl GhostSpawnConfig {
             current_time_between_ghosts: INITIAL_TIME_BETWEEN_GHOSTS,
             damage: 8.0,
             speed: 2.0,
-            //wave_size: 40,
-            wave_size: 10,
+            wave_size: 25,
             spawned_ghosts: 0,
             eliminated_ghosts: 0,
             current_wave: 1,
@@ -79,6 +78,9 @@ impl GhostSpawnConfig {
     }
 }
 
+#[derive(Component)]
+pub struct Spawning(pub Timer);
+
 fn spawn_enemy(
     time: Res<Time>,
     asset_server: Res<AssetServer>,
@@ -90,11 +92,11 @@ fn spawn_enemy(
     config.timer.tick(time.delta());
 
     if config.timer.finished() && config.spawned_ghosts < config.wave_size {
-        let mut pos = Vec3::new(5.0, 1.0, 5.0);
+        let mut pos = Vec3::new(5.0, -1.0, 5.0);
 
         if let Ok(player) = query.get_single() {
             let angle = rng.next_u32() as f32 * 100.0;
-            let radius = 5.0;
+            let radius = 10.0;
             pos.x = angle.sin() * radius + player.translation.x;
             pos.z = angle.cos() * radius + player.translation.z;
         }
@@ -112,7 +114,9 @@ fn spawn_enemy(
         .insert(ActiveEvents::COLLISION_EVENTS)
         .insert(FloatTimer::new((0.5, 1.5)))
         .insert(Damage(config.damage))
-        .insert(Suckable).id();
+        .insert(Suckable)
+        .insert(Spawning(Timer::new(Duration::from_secs_f32(2.0), TimerMode::Once)))
+        .id();
 
         info!("spawned {:?}", id);
 

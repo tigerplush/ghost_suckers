@@ -34,7 +34,7 @@ vacuum sound stays after restart (fixed?)
 
 
 # nice to have
-spawn ghosts out of graves with a little intro animation
+spawn ghosts out of graves
 map-generation
 reload time
 rotational camera shake

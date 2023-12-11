@@ -1,7 +1,7 @@
 use bevy::prelude::*;
 use bevy_rapier3d::prelude::*;
 
-use crate::{component::*, collision_events::*, events::*, resource::*, enemy_spawner::GhostSpawnConfig, GameState};
+use crate::{component::*, collision_events::*, events::*, resource::*, enemy_spawner::{GhostSpawnConfig, Spawning}, GameState, common::Remap};
 
 pub struct EnemyPlugin;
 
@@ -14,16 +14,16 @@ impl Plugin for EnemyPlugin {
             detect_collisions,
             detect_suck_events,
             detect_suckage,
+            rise_ghost,
         ).run_if(in_state(GameState::Game)))
         .add_systems(Update, float_entites);
     }
 }
 
-
 fn move_enemies(
     time: Res<Time>,
     player_query: Query<&Transform, (With<Player>, Without<Ghost>)>,
-    mut query: Query<(&mut Transform, &Ghost), Without<SuckTimer>>,
+    mut query: Query<(&mut Transform, &Ghost), (Without<SuckTimer>, Without<Spawning>)>,
 ) {
     for (mut transform, ghost) in &mut query {
 
@@ -42,9 +42,29 @@ fn move_enemies(
     }
 }
 
+fn rise_ghost(
+    time: Res<Time>,
+    player_query: Query<&Transform, (With<Player>, Without<Spawning>)>,
+    mut ghosts: Query<(&mut Transform, &mut Spawning, Entity)>,
+    mut commands: Commands,
+) {
+    let Ok(player) = player_query.get_single() else {
+        return;
+    };
+    for (mut transform, mut spawning, entity) in &mut ghosts {
+        spawning.0.tick(time.delta());
+        let height = spawning.0.percent().remap((0.0, 1.0), (-1.0, 1.0));
+        transform.translation.y = height;
+        transform.look_at(Vec3::new(player.translation.x, height, player.translation.z), Vec3::Y);
+        if spawning.0.just_finished() {
+            commands.entity(entity).remove::<Spawning>();
+        }
+    }
+}
+
 fn float_entites(
     time: Res<Time>,
-    mut query: Query<(&mut Transform, &mut FloatTimer), Without<SuckTimer>>
+    mut query: Query<(&mut Transform, &mut FloatTimer), (Without<SuckTimer>, Without<Spawning>)>
 ) {
     for (mut transform, mut timer) in &mut query {
         timer.tick(time.delta());
