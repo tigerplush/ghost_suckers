@@ -1,13 +1,15 @@
 use bevy::{prelude::*, audio::{VolumeLevel, PlaybackMode}};
 
-use crate::{resource::Stats, component::Ghost, enemy_spawner::GhostSpawnConfig, events::{VacuumEvent, WaveEnd, PickedUpgrade, Sucked, DamageEvent}};
+use crate::{resource::Stats, component::Ghost, enemy_spawner::GhostSpawnConfig, events::{VacuumEvent, WaveEnd, PickedUpgrade, Sucked, DamageEvent}, GameState};
 
 pub struct SoundPlugin;
 
 impl Plugin for SoundPlugin {
     fn build(&self, app: &mut App) {
         app.insert_resource(DangerLevel::new())
-            .add_systems(Startup, setup)
+            .add_systems(OnEnter(GameState::Menu), play_base_track)
+            .add_systems(OnExit(GameState::Menu), stop_base_track)
+            .add_systems(OnEnter(GameState::Game), setup)
             .add_systems(Update, (
                 update_danger_level,
                 start_stop_vacuum,
@@ -17,7 +19,31 @@ impl Plugin for SoundPlugin {
                 play_upgrade_sound,
                 suck_ghosts,
                 hurt,
-            ));
+            ).run_if(in_state(GameState::Game)));
+    }
+}
+
+fn play_base_track(
+    asset_server: Res<AssetServer>,
+    mut commands: Commands,
+) {
+    commands.spawn(AudioBundle {
+        source: asset_server.load("sounds/Basetrack.wav"),
+        settings: PlaybackSettings {
+            mode: PlaybackMode::Loop,
+            ..default()
+        },
+        ..default()
+    })
+    .insert(BaseTrack);
+}
+
+fn stop_base_track(
+    query: Query<Entity, With<BaseTrack>>,
+    mut commands: Commands,
+) {
+    for entity in &query {
+        commands.entity(entity).despawn_recursive();
     }
 }
 

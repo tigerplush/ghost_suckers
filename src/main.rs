@@ -34,6 +34,14 @@ mod ui;
 mod upgrade;
 mod vacuum;
 
+#[derive(Clone, Copy, Debug, Default, Eq, Hash, PartialEq, States)]
+enum GameState {
+    #[default]
+    Menu,
+    Game,
+    GameOver,
+}
+
 fn main() {
     App::new()
         .insert_resource(AssetMetaCheck::Never)
@@ -44,7 +52,6 @@ fn main() {
             falloff: 1.05,
             ..default()
         })
-        .insert_resource(Stats::new())
         .add_plugins((
             DefaultPlugins.set(WindowPlugin {
                 primary_window: Some(Window {
@@ -76,5 +83,6 @@ fn main() {
             VacuumPlugin,
             SoundPlugin,
         ))
+        .add_state::<GameState>()
         .run();
 }

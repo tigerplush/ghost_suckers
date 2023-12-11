@@ -17,3 +17,6 @@ pub struct Sucked(pub Entity);
 
 #[derive(Event)]
 pub struct PickedUpgrade;
+
+#[derive(Event)]
+pub struct PlayerDied;

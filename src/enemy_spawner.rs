@@ -6,7 +6,7 @@ use bevy_rand::resource::GlobalEntropy;
 use bevy_rapier3d::prelude::*;
 use rand_core::RngCore;
 
-use crate::{component::*, events::{WaveEnd, PickedUpgrade}};
+use crate::{component::*, events::{WaveEnd, PickedUpgrade}, GameState};
 
 pub struct EnemySpawnerPlugin;
 
@@ -15,22 +15,19 @@ const INITIAL_TIME_BETWEEN_GHOSTS: f32 = 0.8;
 impl Plugin for EnemySpawnerPlugin {
     fn build(&self, app: &mut App) {
         app.add_event::<WaveEnd>()
-        .insert_resource(GhostSpawnConfig {
-            timer: Timer::new(Duration::from_secs_f32(INITIAL_TIME_BETWEEN_GHOSTS), TimerMode::Repeating),
-            current_time_between_ghosts: INITIAL_TIME_BETWEEN_GHOSTS,
-            damage: 8.0,
-            speed: 2.0,
-            wave_size: 40,
-            spawned_ghosts: 0,
-            eliminated_ghosts: 0,
-            current_wave: 1,
-        })
+        .add_systems(OnEnter(GameState::Game), reset_config)
         .add_systems(Update, (
             spawn_enemy,
             check_wave_end,
             check_picked_upgrade,
-        ));
+        ).run_if(in_state(GameState::Game)));
     }
+}
+
+fn reset_config(
+    mut commands: Commands,
+) {
+    commands.insert_resource(GhostSpawnConfig::new());
 }
 
 #[derive(Resource)]
@@ -46,6 +43,19 @@ pub struct GhostSpawnConfig {
 }
 
 impl GhostSpawnConfig {
+    pub fn new() -> Self {
+        Self {
+            timer: Timer::new(Duration::from_secs_f32(INITIAL_TIME_BETWEEN_GHOSTS), TimerMode::Repeating),
+            current_time_between_ghosts: INITIAL_TIME_BETWEEN_GHOSTS,
+            damage: 8.0,
+            speed: 2.0,
+            wave_size: 40,
+            spawned_ghosts: 0,
+            eliminated_ghosts: 0,
+            current_wave: 1,
+        }
+    }
+
     pub fn wave_size(&self) -> u32 {
         self.wave_size
     }

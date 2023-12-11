@@ -1,7 +1,7 @@
 use bevy::prelude::*;
 use bevy_rapier3d::prelude::*;
 
-use crate::component::*;
+use crate::{component::*, GameState};
 
 pub struct CollisionPlugin;
 
@@ -18,7 +18,7 @@ impl Plugin for CollisionPlugin {
     fn build(&self, app: &mut App) {
         app.add_event::<CollideWithPlayer>()
             .add_event::<SuckEvent>()
-            .add_systems(Update, handle_collisions);
+            .add_systems(Update, handle_collisions.run_if(in_state(GameState::Game)));
     }
 }
 

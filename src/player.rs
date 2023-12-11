@@ -2,13 +2,14 @@ use bevy::prelude::*;
 use bevy_rapier3d::{prelude::*, rapier::geometry::ColliderShape};
 use bevy_scene_hook::{SceneHook, HookedSceneBundle};
 
-use crate::{resource::{InputValues, Stats}, component::{Player, Nozzle}, events::{DamageEvent, VacuumEvent, WaveEnd, PickedUpgrade}, common::{Random, point_in_circle}};
+use crate::{resource::{InputValues, Stats}, component::{Player, Nozzle}, events::*, common::{Random, point_in_circle}, GameState};
 
 pub struct PlayerPlugin;
 
 impl Plugin for PlayerPlugin {
     fn build(&self, app: &mut App) {
-        app.add_systems(Startup, (spawn_player, ))
+        app.add_event::<PlayerDied>()
+            .add_systems(OnEnter(GameState::Game), (spawn_player, reset_stats))
             .add_systems(Update, (
                 move_player,
                 check_health,
@@ -17,7 +18,7 @@ impl Plugin for PlayerPlugin {
                 spawn_vacuum_effect,
                 move_vacuum_effect,
                 handle_between_waves,
-            ));
+            ).run_if(in_state(GameState::Game)));
     }
 }
 
@@ -71,6 +72,12 @@ fn spawn_player(
         transform: Transform::from_xyz( 0.0, 5.0, 5.0).looking_at(Vec3::ZERO, Vec3::Y),
         ..default()
     });
+}
+
+fn reset_stats(
+    mut commands: Commands,
+) {
+    commands.insert_resource(Stats::new());
 }
 
 fn move_player(
@@ -165,6 +172,7 @@ fn move_vacuum_effect(
 fn check_health(
     time: Res<Time>,
     mut stats: ResMut<Stats>,
+    mut game_state: ResMut<NextState<GameState>>,
     query: Query<Entity, With<Player>>,
     mut commands: Commands,
 ) {
@@ -172,9 +180,11 @@ fn check_health(
         stats.regenerate(time.delta_seconds());
     }
     if stats.health <= 0.0 {
+        stats.reg_paused = true;
         for player in &query {
             commands.entity(player).despawn_recursive();
         }
+        game_state.set(GameState::GameOver);
     }
 }
 

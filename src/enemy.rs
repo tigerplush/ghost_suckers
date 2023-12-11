@@ -1,7 +1,7 @@
 use bevy::prelude::*;
 use bevy_rapier3d::prelude::*;
 
-use crate::{component::*, collision_events::*, events::*, common::Remap, resource::*, enemy_spawner::GhostSpawnConfig};
+use crate::{component::*, collision_events::*, events::*, common::Remap, resource::*, enemy_spawner::GhostSpawnConfig, GameState};
 
 pub struct EnemyPlugin;
 
@@ -18,7 +18,7 @@ impl Plugin for EnemyPlugin {
             detect_collisions,
             detect_suck_events,
             detect_suckage,
-        ));
+        ).run_if(in_state(GameState::Game)));
     }
 }
 

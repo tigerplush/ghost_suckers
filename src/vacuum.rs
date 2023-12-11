@@ -1,13 +1,13 @@
 use bevy::prelude::*;
 
-use crate::{collision_events::SuckEvent, component::*, resource::*, common::Random, events::Sucked};
+use crate::{collision_events::SuckEvent, component::*, resource::*, common::Random, events::Sucked, GameState};
 
 pub struct VacuumPlugin;
 
 impl Plugin for VacuumPlugin {
     fn build(&self, app: &mut App) {
         app.add_event::<Sucked>()
-            .add_systems(Update, (detect_suckage, update_suckage));
+            .add_systems(Update, (detect_suckage, update_suckage).run_if(in_state(GameState::Game)));
     }
 }
 
@@ -21,7 +21,7 @@ fn detect_suckage(
         match suck_event {
             SuckEvent::Start(entity) => {
                 if let Some(mut cmds) = commands.get_entity(*entity) {
-                    cmds.insert(SuckTimer(Timer::from_seconds(config.suck_time, TimerMode::Once)));
+                    cmds.try_insert(SuckTimer(Timer::from_seconds(config.suck_time, TimerMode::Once)));
                 }
             }
             SuckEvent::Stop(entity) => {

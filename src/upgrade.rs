@@ -2,14 +2,18 @@ use bevy::prelude::*;
 use bevy_rapier3d::prelude::*;
 use rand::Rng;
 
-use crate::{events::{WaveEnd, Sucked, PickedUpgrade}, component::{FloatTimer, Suckable}, resource::{CameraSettings, Stats}, common::Random};
+use crate::{events::{WaveEnd, Sucked, PickedUpgrade}, component::{FloatTimer, Suckable}, resource::{CameraSettings, Stats}, common::Random, GameState};
 
 pub struct UpgradePlugin;
 
 impl Plugin for UpgradePlugin {
     fn build(&self, app: &mut App) {
         app.add_event::<PickedUpgrade>()
-            .add_systems(Update, (spawn_update, detect_suck_events, remove_all_upgrades));
+            .add_systems(Update, (
+                spawn_update,
+                detect_suck_events,
+                remove_all_upgrades).run_if(in_state(GameState::Game))
+            );
     }
 }
 

@@ -1,16 +1,22 @@
 use bevy::prelude::*;
 
-use crate::resource::Stats;
+use crate::{resource::Stats, GameState};
 
 pub struct UiPlugin;
 
 impl Plugin for UiPlugin {
     fn build(&self, app: &mut App) {
-        app.add_systems(Startup, setup)
+        app.add_systems(OnEnter(GameState::Menu), spawn_main_menu)
+            .add_systems(Update, handle_main_menu.run_if(in_state(GameState::Menu)))
+            .add_systems(OnExit(GameState::Menu), cleanup_main_menu)
+            .add_systems(OnEnter(GameState::Game), setup)
             .add_systems(Update, (
                 update_stats,
                 update_entities,
-            ));
+            ).run_if(in_state(GameState::Game)))
+            .add_systems(OnEnter(GameState::GameOver), spawn_restart_button)
+            .add_systems(Update, button_system.run_if(in_state(GameState::GameOver)))
+            .add_systems(OnExit(GameState::GameOver), cleanup_restart_button);
     }
 }
 
@@ -137,5 +143,197 @@ fn update_entities(
     let entities = query.iter().collect::<Vec<Entity>>().len();
     for mut counter in &mut counters {
         counter.sections[0].value = format!("Entities: {}", entities);
+    }
+}
+
+const NORMAL_BUTTON: Color = Color::rgb(0.15, 0.15, 0.15);
+const HOVERED_BUTTON: Color = Color::rgb(0.25, 0.25, 0.25);
+const PRESSED_BUTTON: Color = Color::rgb(0.35, 0.75, 0.35);
+
+#[derive(Component)]
+struct ButtonNode;
+
+fn spawn_restart_button(
+    asset_server: Res<AssetServer>,
+    mut commands: Commands,
+) {
+    commands
+        .spawn(NodeBundle {
+            style: Style {
+                width: Val::Percent(100.0),
+                height: Val::Percent(100.0),
+                align_items: AlignItems::Center,
+                justify_content: JustifyContent::Center,
+                ..default()
+            },
+            ..default()
+        })
+        .insert(ButtonNode)
+        .with_children(|parent| {
+            parent
+                .spawn(ButtonBundle {
+                    style: Style {
+                        width: Val::Px(150.0),
+                        height: Val::Px(65.0),
+                        border: UiRect::all(Val::Px(5.0)),
+                        // horizontally center child text
+                        justify_content: JustifyContent::Center,
+                        // vertically center child text
+                        align_items: AlignItems::Center,
+                        ..default()
+                    },
+                    border_color: BorderColor(Color::BLACK),
+                    background_color: NORMAL_BUTTON.into(),
+                    ..default()
+                })
+                .with_children(|parent| {
+                    parent.spawn(TextBundle::from_section(
+                        "Restart",
+                        TextStyle {
+                            font: asset_server.load("graveyrd.ttf"),
+                            font_size: 40.0,
+                            color: Color::rgb(0.9, 0.9, 0.9),
+                        },
+                    ));
+                });
+        });
+}
+
+fn button_system(
+    mut game_state: ResMut<NextState<GameState>>,
+    mut interaction_query: Query<
+        (
+            &Interaction,
+            &mut BackgroundColor,
+            &mut BorderColor,
+            &Children,
+        ),
+        (Changed<Interaction>, With<Button>),
+    >,
+    mut text_query: Query<&mut Text>,
+) {
+    for (interaction, mut color, mut border_color, children) in &mut interaction_query {
+        let mut text = text_query.get_mut(children[0]).unwrap();
+        match *interaction {
+            Interaction::Pressed => {
+                text.sections[0].value = "Restart".to_string();
+                *color = PRESSED_BUTTON.into();
+                border_color.0 = Color::RED;
+                game_state.set(GameState::Game);
+            }
+            Interaction::Hovered => {
+                text.sections[0].value = "Restart".to_string();
+                *color = HOVERED_BUTTON.into();
+                border_color.0 = Color::WHITE;
+            }
+            Interaction::None => {
+                text.sections[0].value = "Restart".to_string();
+                *color = NORMAL_BUTTON.into();
+                border_color.0 = Color::BLACK;
+            }
+        }
+    }
+}
+
+fn cleanup_restart_button(
+    query: Query<Entity, With<ButtonNode>>,
+    mut commands: Commands,
+) {
+    for entity in &query {
+        commands.entity(entity).despawn_recursive();
+    }
+}
+
+#[derive(Component)]
+struct MainMenu;
+
+fn spawn_main_menu(
+    asset_server: Res<AssetServer>,
+    mut commands: Commands,
+) {
+    commands
+        .spawn(NodeBundle {
+            style: Style {
+                width: Val::Percent(100.0),
+                height: Val::Percent(100.0),
+                align_items: AlignItems::Center,
+                justify_content: JustifyContent::Center,
+                ..default()
+            },
+            ..default()
+        })
+        .insert(MainMenu)
+        .with_children(|parent| {
+            parent
+                .spawn(ButtonBundle {
+                    style: Style {
+                        width: Val::Px(150.0),
+                        height: Val::Px(65.0),
+                        border: UiRect::all(Val::Px(5.0)),
+                        // horizontally center child text
+                        justify_content: JustifyContent::Center,
+                        // vertically center child text
+                        align_items: AlignItems::Center,
+                        ..default()
+                    },
+                    border_color: BorderColor(Color::BLACK),
+                    background_color: NORMAL_BUTTON.into(),
+                    ..default()
+                })
+                .with_children(|parent| {
+                    parent.spawn(TextBundle::from_section(
+                        "Start",
+                        TextStyle {
+                            font: asset_server.load("graveyrd.ttf"),
+                            font_size: 40.0,
+                            color: Color::rgb(0.9, 0.9, 0.9),
+                        },
+                    ));
+                });
+        });
+}
+
+fn handle_main_menu(
+    mut game_state: ResMut<NextState<GameState>>,
+    mut interaction_query: Query<
+        (
+            &Interaction,
+            &mut BackgroundColor,
+            &mut BorderColor,
+            &Children,
+        ),
+        (Changed<Interaction>, With<Button>),
+    >,
+    mut text_query: Query<&mut Text>,
+) {
+    for (interaction, mut color, mut border_color, children) in &mut interaction_query {
+        let mut text = text_query.get_mut(children[0]).unwrap();
+        match *interaction {
+            Interaction::Pressed => {
+                text.sections[0].value = "Start".to_string();
+                *color = PRESSED_BUTTON.into();
+                border_color.0 = Color::RED;
+                game_state.set(GameState::Game);
+            }
+            Interaction::Hovered => {
+                text.sections[0].value = "Start".to_string();
+                *color = HOVERED_BUTTON.into();
+                border_color.0 = Color::WHITE;
+            }
+            Interaction::None => {
+                text.sections[0].value = "Start".to_string();
+                *color = NORMAL_BUTTON.into();
+                border_color.0 = Color::BLACK;
+            }
+        }
+    }
+}
+
+fn cleanup_main_menu(
+    query: Query<Entity, With<MainMenu>>,
+    mut commands: Commands,
+) {
+    for entity in &query {
+        commands.entity(entity).despawn_recursive();
     }
 }
