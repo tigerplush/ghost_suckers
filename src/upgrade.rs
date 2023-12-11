@@ -14,8 +14,8 @@ impl Plugin for UpgradePlugin {
                 detect_suck_events,
                 remove_all_upgrades,
                 show_labels,
-            ).run_if(in_state(GameState::Game))
-            );
+            ).run_if(in_state(GameState::Game)))
+            .add_systems(OnEnter(GameState::GameOver), remove_all_upgrades);
     }
 }
 

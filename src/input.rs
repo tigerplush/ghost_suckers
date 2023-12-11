@@ -1,13 +1,13 @@
 use bevy::{prelude::*, window::PrimaryWindow, input::{mouse::MouseButtonInput, ButtonState}};
 
-use crate::{resource::InputValues, component::FollowCamera, events::VacuumEvent};
+use crate::{resource::InputValues, component::FollowCamera, events::VacuumEvent, GameState};
 
 pub struct InputPlugin;
 
 impl Plugin for InputPlugin {
     fn build(&self, app: &mut App) {
         app.add_event::<VacuumEvent>()
-            .add_systems(Update, update_values);
+            .add_systems(Update, update_values.run_if(in_state(GameState::Game)));
     }
 }
 

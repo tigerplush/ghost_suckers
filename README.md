@@ -30,10 +30,10 @@ less slowing from damage
 fix sound https://github.com/rparrett/bevy_pipelines_ready
 
 # bugs
-sometimes vacuum sound cuts out (fixed?)
+vacuum sound stays after restart (fixed?)
+
 
 # nice to have
-fade music
 spawn ghosts out of graves with a little intro animation
 map-generation
 reload time

@@ -20,7 +20,8 @@ impl Plugin for SoundPlugin {
                 suck_ghosts,
                 hurt,
             ).run_if(in_state(GameState::Game)))
-            .add_systems(OnEnter(GameState::GameOver), kill_all_sound);
+            .add_systems(OnEnter(GameState::GameOver), kill_all_sound)
+            .add_systems(OnExit(GameState::GameOver), kill_all_sound);
     }
 }
 
@@ -95,7 +96,7 @@ impl DangerLevel {
             ghosts_on_screen: 0.0,
             health_weight: 2.0,
             ghost_weight: 1.0,
-            base_to_medium_threshold: (0.34, 0.32),
+            base_to_medium_threshold: (0.32, 0.35),
         }
     }
 
@@ -122,6 +123,7 @@ fn update_danger_level(
 }
 
 fn apply_danger_level(
+    time: Res<Time>,
     danger_level: Res<DangerLevel>,
     base_tracks: Query<&AudioSink, (With<BaseTrack>, Without<MediumTrack>)>,
     medium_tracks: Query<&AudioSink, (With<MediumTrack>, Without<BaseTrack>)>,
@@ -134,13 +136,13 @@ fn apply_danger_level(
     };
 
     if danger_level.danger_level() > danger_level.base_to_medium_threshold.0 {
-        medium_track.set_volume(1.0);
-        base_track.set_volume(0.0);
+        medium_track.set_volume((medium_track.volume() + time.delta_seconds()).clamp(0.0, 1.0));
+        base_track.set_volume((base_track.volume() - time.delta_seconds()).clamp(0.0, 1.0));
     }
 
     if danger_level.danger_level() < danger_level.base_to_medium_threshold.1 {
-        medium_track.set_volume(0.0);
-        base_track.set_volume(1.0);
+        medium_track.set_volume((medium_track.volume() - time.delta_seconds()).clamp(0.0, 1.0));
+        base_track.set_volume((base_track.volume() + time.delta_seconds()).clamp(0.0, 1.0));
     }
 }
 
